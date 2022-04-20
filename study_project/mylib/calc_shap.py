@@ -71,8 +71,8 @@ class ShapImage(object):
     def shap_visu(self, file):
         image = self.img
         shap.image_plot(self.shap_info['shap_values'], image, show=False)
-        plt.savefig('{}_heat.png'.format(file))
+        plt.savefig('C:/Users/yuya3/study_folder/{}_heat.png'.format(file))
         plt.close()
         plt.bar(range(0, 10), self.shap_info['shap_sum'])
-        plt.savefig('{}_bar.png'.format(file))
+        plt.savefig('C:/Users/yuya3/study_folder/{}_bar.png'.format(file))
         plt.close()
