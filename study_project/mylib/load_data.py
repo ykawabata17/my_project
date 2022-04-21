@@ -9,7 +9,7 @@ import numpy as np
 
 class LoadData(object):
     def __init__(self):
-        self._file_path = 'C:/Users/yuya3/study_folder'
+        self._file_path = 'C:/Users/kawabata/study_data'
 
     @staticmethod
     def load_train_org():

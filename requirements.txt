@@ -1,0 +1,7 @@
+setuptools~=52.0.0
+numpy~=1.19.5
+tensorflow~=2.5.0
+matplotlib~=3.3.4
+shap~=0.39.0
+opencv-python~=4.5.3.56
+keras~=2.4.3

@@ -1,10 +1,10 @@
-from load_data import LoadData
+from .load_data import LoadData
 from keras.models import load_model
 
 
 class EvaluateAcc(object):
     def __init__(self):
-        self._file_path = 'C:/Users/yuya3/study_folder'
+        self._file_path = 'C:/Users/kawabata/study_data'
         data_loader = LoadData()
         self.testX_org, self.testY_org = data_loader.load_test_org()
         self.testX_shap, self.testY_org = data_loader.load_test_shap()
