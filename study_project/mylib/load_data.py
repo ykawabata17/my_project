@@ -18,7 +18,7 @@ class LoadData(object):
         return trainX_org, trainY_org
 
     @staticmethod
-    def load_test_org(cls):
+    def load_test_org():
         _, (testX_org, testY_org) = mnist.load_data()
         testX_org, testY_org = LoadData._data_edit(testX_org, testY_org)
         return testX_org, testY_org
@@ -26,7 +26,7 @@ class LoadData(object):
     def load_train_shap(self):
         trainX_shap, trainY_shap = [], []
         for i in range(10):
-            files = glob.glob(self._file_path + 'shap_train/{}/*.jpg'.format(i))
+            files = glob.glob(self._file_path + '/shap_train/{}/*.jpg'.format(i))
             for file in files:
                 img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
                 trainX_shap.append(img)
@@ -37,7 +37,7 @@ class LoadData(object):
     def load_test_shap(self):
         testX_shap, testY_shap = [], []
         for i in range(10):
-            files = glob.glob(self._file_path + 'shap_test/{}/*.jpg'.format(i))
+            files = glob.glob(self._file_path + '/shap_test/{}/*.jpg'.format(i))
             for file in files:
                 img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
                 testX_shap.append(img)
@@ -47,7 +47,7 @@ class LoadData(object):
 
     def load_train_ae(self):
         trainX_ae, trainY_ae = [], []
-        files = glob.glob(self._file_path + 'sample_train/*.jpg')
+        files = glob.glob(self._file_path + '/sample_train/*.jpg')
         for img in files:
             num = re.sub(r"\D", "", img)
             img = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
@@ -58,7 +58,7 @@ class LoadData(object):
 
     def load_test_ae(self):
         testX_ae, testY_ae = [], []
-        files = glob.glob(self._file_path + 'sample_test/*.jpg')
+        files = glob.glob(self._file_path + '/sample_test/*.jpg')
         for file in files:
             img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
             testX_ae.append(img)
@@ -69,7 +69,7 @@ class LoadData(object):
 
     def load_test_random(self):
         testX_random, testY_random = [], []
-        files = glob.glob(self._file_path + 'random_test/*.jpg')
+        files = glob.glob(self._file_path + '/random_test/*.jpg')
         for file in files:
             img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
             testX_random.append(img)
