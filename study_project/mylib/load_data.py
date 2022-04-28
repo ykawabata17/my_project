@@ -21,6 +21,7 @@ class LoadData(object):
     def load_test_org():
         _, (testX_org, testY_org) = mnist.load_data()
         testX_org, testY_org = LoadData._data_edit(testX_org, testY_org)
+        testY_org = to_categorical(testY_org)
         return testX_org, testY_org
 
     def load_train_shap(self):
@@ -54,6 +55,7 @@ class LoadData(object):
                 testX_shap.append(img)
                 testY_shap.append(i)
         testX_shap, testY_shap = LoadData._data_edit(testX_shap, testY_shap)
+        testY_shap = to_categorical(testY_shap)
         return testX_shap, testY_shap
 
     def load_train_ae(self):
@@ -76,6 +78,7 @@ class LoadData(object):
             num = re.sub(r"\D", "", file)
             testY_ae.append(num[0])
         testX_ae, testY_ae = LoadData._data_edit(testX_ae, testY_ae)
+        testY_ae = to_categorical(testY_ae)
         return testX_ae, testY_ae
 
     def load_test_random(self):
@@ -87,6 +90,7 @@ class LoadData(object):
             num = re.sub(r"\D", "", file)
             testY_random.append(num[0])
         testX_random, testY_random = LoadData._data_edit(testX_random, testY_random)
+        testY_random = to_categorical(testY_random)
         return testX_random, testY_random
 
     @staticmethod

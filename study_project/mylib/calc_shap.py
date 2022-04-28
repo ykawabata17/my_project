@@ -19,10 +19,11 @@ class ShapImage(object):
         min_index = np.argmin(shap_sum)
         max_shap = s[max_index].reshape(28, 28)
         min_shap = s[min_index].reshape(28, 28)
-        shap_info = {'max_index': max_index, 'min_index': min_index,
-                     'max_shap': max_shap, 'min_shap': min_shap,
-                     'shap_values': shap_values, 'shap_sum': shap_sum
-                     }
+        shap_info = {
+            'max_index': max_index, 'min_index': min_index,
+            'max_shap': max_shap, 'min_shap': min_shap,
+            'shap_values': shap_values, 'shap_sum': shap_sum,
+        }
         self.shap_info = shap_info
 
     def add_noise(self, eps=0.5):
@@ -71,8 +72,8 @@ class ShapImage(object):
     def shap_visu(self, file):
         image = self.img
         shap.image_plot(self.shap_info['shap_values'], image, show=False)
-        plt.savefig('C:/Users/yuya3/study_folder/{}_heat.png'.format(file))
+        plt.savefig('C:/Users/kawabata/study_data/{}_heat.png'.format(file))
         plt.close()
         plt.bar(range(0, 10), self.shap_info['shap_sum'])
-        plt.savefig('C:/Users/yuya3/study_folder/{}_bar.png'.format(file))
+        plt.savefig('C:/Users/kawabata/study_data/{}_bar.png'.format(file))
         plt.close()
