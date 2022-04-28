@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 from keras import backend as K
-from keras.preprocessing.image import array_to_img
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
 
@@ -46,12 +45,9 @@ def grad_cam(model, img):
     # オリジナルイメージもカラー化
     org_img = img
 
-    cv2.imwrite('img', cam)
-    cv2.waitKey(1)
-    cv2.imshow('img', org_img)
-    cv2.waitKey(1)
-
     # 元のイメージに合成
-    # rate = 0.4
-    # cam = cv2.addWeighted(src1=org_img, alpha=(1 - rate), src2=cam, beta=rate, gamma=0)
-    # cam = cv2.cvtColor(cam, cv2.COLOR_BGR2RGB)  # BGR -> RGBに変換
+    rate = 0.4
+    cam = cv2.addWeighted(src1=org_img, alpha=(1 - rate), src2=cam, beta=rate, gamma=0)
+    cam = cv2.cvtColor(cam, cv2.COLOR_BGR2RGB)  # BGR -> RGBに変換
+
+    plt.imshow(cam)

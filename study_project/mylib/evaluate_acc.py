@@ -1,15 +1,16 @@
+import glob
+
 from .load_data import LoadData
 from keras.models import load_model
 
 
 class EvaluateAcc(object):
     def __init__(self):
-        self._file_path = 'C:/Users/kawabata/study_data'
         data_loader = LoadData()
         self.testX_org, self.testY_org = data_loader.load_test_org()
-        self.testX_shap, self.testY_org = data_loader.load_test_shap()
+        self.testX_shap, self.testY_shap = data_loader.load_test_shap()
         self.testX_ae, self.testY_ae = data_loader.load_test_ae()
-        self.testX_rand, self.testY_rand = data_loader.load_test_random()
+        self.testX_random, self.testY_random = data_loader.load_test_random()
 
     def evaluate(self, models):
         acc_org, acc_shap, acc_ae, acc_rand = [], [], [], []
@@ -22,24 +23,13 @@ class EvaluateAcc(object):
             acc_shap.append(shap)
             acc_ae.append(ae)
             acc_rand.append(rand)
-            return [acc_org, acc_shap, acc_ae, acc_rand]
+        return [acc_org, acc_shap, acc_ae, acc_rand]
 
     @staticmethod
-    def model_org():
-        models = load_model('models/org/*.h5')
-        return EvaluateAcc.evaluate(models)
-
-    @staticmethod
-    def model_prop():
-        models = load_model('models/prop/*.h5')
-        return EvaluateAcc.evaluate(models)
-
-    @staticmethod
-    def model_at():
-        models = load_model('models/at/*.h5')
-        return EvaluateAcc.evaluate(models)
-
-    @staticmethod
-    def model_hybrid():
-        models = load_model('models/hybrid/*.h5')
-        return EvaluateAcc.evaluate(models)
+    def model_evaluate(folder_name):
+        models = []
+        evaluate = EvaluateAcc()
+        files = glob.glob(f'C:/Users/kawabata/study_data/models/{folder_name}/*.h5')
+        for file in files:
+            models.append(load_model(file))
+        return evaluate.evaluate(models)
