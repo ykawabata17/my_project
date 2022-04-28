@@ -1,14 +1,12 @@
-from keras.models import load_model
-
 from mylib.load_data import LoadData
 from mylib.grad_cam import grad_cam
+from mylib.model import ModelCreate
 
 
 def main():
-    model = load_model('C:/Users/kawabata/study_data/models/original/model.h5')
-    trainX_org, trainY_org = LoadData.load_train_org()
-    img = trainX_org[19]
-    grad_cam(model, img)
+    model_create = ModelCreate()
+    for i in range(11):
+        model_create.model_org_shap_mis(org_num=10000, shap_mis_num=i*1000, file_name=i*1000)
 
 
 if __name__ == '__main__':

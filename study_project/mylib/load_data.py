@@ -34,6 +34,17 @@ class LoadData(object):
         trainX_shap, trainY_shap = LoadData._data_edit(trainX_shap, trainY_shap)
         return trainX_shap, trainY_shap
 
+    def load_train_shap_mis(self):
+        trainX_shap_mis, trainY_shap_mis = [], []
+        for i in range(10):
+            files = glob.glob(self._file_path + '/shap_train_mis/{}/*.jpg'.format(i))
+            for file in files:
+                img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+                trainX_shap_mis.append(img)
+                trainY_shap_mis.append(i)
+        trainX_shap_mis, trainY_shap_mis = LoadData._data_edit(trainX_shap_mis, trainY_shap_mis)
+        return trainX_shap_mis, trainY_shap_mis
+
     def load_test_shap(self):
         testX_shap, testY_shap = [], []
         for i in range(10):
@@ -88,5 +99,4 @@ class LoadData(object):
         dataY = dataY[random]
         dataX = dataX.reshape(len(dataX), 28, 28)
         dataX = np.expand_dims(dataX, axis=-1)
-        dataY = to_categorical(dataY)
         return dataX, dataY
