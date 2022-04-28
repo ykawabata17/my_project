@@ -9,9 +9,11 @@ disable_eager_execution()
 
 
 def grad_cam(model, img):
+    model.summary()
     img_predict = []
     conv_layer_output = model.get_layer("conv").output
-    input_val = (28, 28, 1)
+    processed_img = np.expand_dims(img, axis=0)
+    # processed_img = img.astype('float32') / 255
     img_predict.append(np.asarray(img))
     img_predict = np.asarray(img_predict)
     prediction = model.predict(img_predict)
@@ -23,7 +25,7 @@ def grad_cam(model, img):
         grads = K.gradients(loss, conv_layer_output)[0]
     grads_func = K.function([model.input, K.learning_phase()], [conv_layer_output, grads])
 
-    (conv_output, conv_values) = grads_func([np.asarray([input_val]), 0])
+    (conv_output, conv_values) = grads_func([processed_img])
     conv_output = conv_output[0]
     conv_values = conv_values[0]
 
