@@ -44,7 +44,7 @@ class ModelCreate(object):
     def model_org_shap(self, org_num, shap_num, file_name):
         trainX = np.append(self.trainX_org[:org_num], self.trainX_shap[:shap_num])
         trainY = np.append(self.trainY_org[:org_num], self.trainY_shap[:shap_num])
-        trainX = trainX.reshape(org_num + shap_num, 28, 28, 1)
+        trainX = trainX.reshape(org_num+shap_num, 28, 28, 1)
         model = ModelCreate._model_create(trainX, trainY)
         model.save(self._file_path + f'models/org_shap/{file_name}.h5')
 

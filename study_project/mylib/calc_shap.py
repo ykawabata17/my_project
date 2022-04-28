@@ -7,6 +7,8 @@ import shap
 class ShapImage(object):
     def __init__(self, x_train, model, img):
         self.img = img
+        self.x_train = x_train
+        self.model = model
         background = self.x_train[np.random.choice(self.x_train.shape[0], 100, replace=False)]
         e = shap.DeepExplainer(self.model, background)
         shap_values = e.shap_values(img)
