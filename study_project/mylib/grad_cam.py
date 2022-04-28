@@ -1,57 +1,57 @@
-import numpy as np
 import cv2
-
-from tensorflow.keras import models
+import numpy as np
+import matplotlib.pyplot as plt
 import tensorflow as tf
 
+from keras import backend as K
+from keras.preprocessing.image import array_to_img
+from tensorflow.python.framework.ops import disable_eager_execution
+disable_eager_execution()
 
-def grad_cam(input_model, x, layer_name):
-    """
-    Args:
-        input_model(object): モデルオブジェクト
-        x(ndarray): 画像
-        layer_name(string): 畳み込み層の名前
-    Returns:
-        output_image(ndarray): 元の画像に色付けした画像
-    """
 
-    # 画像の前処理
-    # 読み込む画像が1枚なため、次元を増やしておかないとmode.predictが出来ない
-    x = x.reshape(1, 28, 28, 3)
-    preprocessed_input = x.astype('float32') / 255.0
+def grad_cam(model, img):
+    model.summary()
+    img_predict = []
+    conv_layer_output = model.get_layer("conv").output
+    processed_img = np.expand_dims(img, axis=0)
+    # processed_img = img.astype('float32') / 255
+    img_predict.append(np.asarray(img))
+    img_predict = np.asarray(img_predict)
+    prediction = model.predict(img_predict)
+    prediction_idx = np.argmax(prediction)
+    loss = model.get_layer("output").output[0][prediction_idx]
 
-    grad_model = models.Model([input_model.inputs], [input_model.get_layer(layer_name).output, input_model.output])
+    g = tf.Graph()
+    with g.as_default():
+        grads = K.gradients(loss, conv_layer_output)[0]
+    grads_func = K.function([model.input, K.learning_phase()], [conv_layer_output, grads])
 
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(preprocessed_input)
-        class_idx = np.argmax(predictions[0])
-        loss = predictions[:, class_idx]
+    (conv_output, conv_values) = grads_func([processed_img])
+    conv_output = conv_output[0]
+    conv_values = conv_values[0]
 
-    # 勾配を計算
-    output = conv_outputs[0]
-    grads = tape.gradient(loss, conv_outputs)[0]
+    weights = np.mean(conv_values, axis=(0, 1))
+    cam = np.dot(conv_output, weights)
 
-    gate_f = tf.cast(output > 0, 'float32')
-    gate_r = tf.cast(grads > 0, 'float32')
-
-    guided_grads = gate_f * gate_r * grads
-
-    # 重みを平均化して、レイヤーの出力に乗じる
-    weights = np.mean(guided_grads, axis=(0, 1))
-    cam = np.dot(output, weights)
-
-    # 画像を元画像と同じ大きさにスケーリング
+    # Conv層の画像はサイズが違うのでリサイズ。
     cam = cv2.resize(cam, (28, 28), cv2.INTER_LINEAR)
-    # ReLUの代わり
+
+    # heatmap?
     cam = np.maximum(cam, 0)
-    # ヒートマップを計算
-    heatmap = cam / cam.max()
+    cam = cam / cam.max()
 
     # モノクロ画像に疑似的に色をつける
-    jet_cam = cv2.applyColorMap(np.uint8(255.0*heatmap), cv2.COLORMAP_JET)
-    # RGBに変換
-    rgb_cam = cv2.cvtColor(jet_cam, cv2.COLOR_BGR2RGB)
-    # もとの画像に合成
-    output_image = (np.float32(rgb_cam) + x / 2)
+    cam = cv2.applyColorMap(np.uint8(255 * cam), cv2.COLORMAP_JET)
 
-    return output_image
+    # オリジナルイメージもカラー化
+    org_img = img
+
+    cv2.imwrite('img', cam)
+    cv2.waitKey(1)
+    cv2.imshow('img', org_img)
+    cv2.waitKey(1)
+
+    # 元のイメージに合成
+    # rate = 0.4
+    # cam = cv2.addWeighted(src1=org_img, alpha=(1 - rate), src2=cam, beta=rate, gamma=0)
+    # cam = cv2.cvtColor(cam, cv2.COLOR_BGR2RGB)  # BGR -> RGBに変換
