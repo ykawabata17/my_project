@@ -1,12 +1,16 @@
-from mylib.load_data import LoadData
-from mylib.grad_cam import grad_cam
-from mylib.model import ModelCreate
-from mylib.evaluate_acc import EvaluateAcc
+from mylib.calc_shap import ShapCreate
+from tensorflow.keras.datasets import mnist
 
 
 def main():
-    acc = EvaluateAcc.model_evaluate(folder_name='org_shap_mis')
-    print(acc)
+    (trainX, _), _ = mnist.load_data()
+    shap_create = ShapCreate()
+    img = trainX[0]
+    img = img.astype('float32') / 255
+    img = img.reshape(1, 28, 28, 1)
+    shap_create.shap_calc(img)
+    shap_create.create_fig()
+
 
 
 if __name__ == '__main__':

@@ -3,15 +3,25 @@ import numpy as np
 import random
 import shap
 
+from tensorflow.keras.datasets import mnist
+from keras.models import load_model
 
-class ShapImage(object):
-    def __init__(self, x_train, model, img):
+
+class ShapCreate(object):
+    def __init__(self):
+        (trainX, _), _ = mnist.load_data()
+        trainX = trainX.reshape((60000, 28, 28, 1))
+        trainX = trainX.astype('float32') / 255
+        self.shap_info = None
+        self.img = None
+        self.trainX = trainX
+        self.model = load_model('C:/Users/kawabata/study_data/models/org/org10000.h5')
+        background = self.trainX[np.random.choice(self.trainX.shape[0], 100, replace=False)]
+        self.e = shap.DeepExplainer(self.model, background)
+
+    def shap_calc(self, img):
         self.img = img
-        self.x_train = x_train
-        self.model = model
-        background = self.x_train[np.random.choice(self.x_train.shape[0], 100, replace=False)]
-        e = shap.DeepExplainer(self.model, background)
-        shap_values = e.shap_values(img)
+        shap_values = self.e.shap_values(self.img)
         shap_sum = []
         shap_sum.clear()
         s = np.array(shap_values)
@@ -72,10 +82,13 @@ class ShapImage(object):
         return image
 
     def shap_visu(self, file):
-        image = self.img
-        shap.image_plot(self.shap_info['shap_values'], image, show=False)
+        shap.image_plot(self.shap_info['shap_values'], self.img, show=False)
         plt.savefig('C:/Users/kawabata/study_data/{}_heat.png'.format(file))
         plt.close()
         plt.bar(range(0, 10), self.shap_info['shap_sum'])
         plt.savefig('C:/Users/kawabata/study_data/{}_bar.png'.format(file))
         plt.close()
+
+    def create_fig(self):
+        max_shap = self.shap_info['max_shap']
+        print(max_shap)
