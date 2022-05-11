@@ -102,10 +102,17 @@ class ShapCreate(object):
         # norm_values = [i for i in norm_values if i != 0]
         return variance(norm_values)
 
-    def plot_max5_shap(self):
-        shap_values = self.shap_info['max_shap']
-        shap_values = sorted(list(itertools.chain.from_iterable(shap_values)))
+    def plot_max_shap(self):
+        max_shap = self.shap_info['max_shap']
+        max_index = self.shap_info['max_index']
+        indexes = []
+        shap_values = sorted(list(itertools.chain.from_iterable(max_shap)))
+        i = 0
         for value in reversed(shap_values):
-            idx = np.where(shap_values == value)
-            print(idx)
-            break
+            idx = np.where(max_shap == value)
+            index = [idx[0][0], idx[1][0]]
+            indexes.append(index)
+            i += 1
+            if i == 5:
+                break
+        return indexes, max_index
