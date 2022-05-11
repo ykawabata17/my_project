@@ -1,7 +1,9 @@
+import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 import random
 import shap
+from statistics import variance
 
 from tensorflow.keras.datasets import mnist
 from keras.models import load_model
@@ -89,6 +91,21 @@ class ShapCreate(object):
         plt.savefig('C:/Users/kawabata/study_data/{}_bar.png'.format(file))
         plt.close()
 
-    def create_fig(self):
+    def variance_max_shap(self):
         max_shap = self.shap_info['max_shap']
-        print(max_shap)
+        shap_value = list(itertools.chain.from_iterable(max_shap))
+        max_value = max(shap_value)
+        min_value = min(shap_value)
+        norm_values = [value/max_value if value > 0 else -(value/min_value) for value in shap_value]
+        norm_values = sorted(norm_values)
+        norm_values = [i for i in norm_values if i < -0.01 or i > 0.01]
+        # norm_values = [i for i in norm_values if i != 0]
+        return variance(norm_values)
+
+    def plot_max5_shap(self):
+        shap_values = self.shap_info['max_shap']
+        shap_values = sorted(list(itertools.chain.from_iterable(shap_values)))
+        for value in reversed(shap_values):
+            idx = np.where(shap_values == value)
+            print(idx)
+            break
