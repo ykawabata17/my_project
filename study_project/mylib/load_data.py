@@ -46,7 +46,7 @@ class LoadData(object):
         trainX_shap_mis, trainY_shap_mis = LoadData._data_edit(trainX_shap_mis, trainY_shap_mis)
         return trainX_shap_mis, trainY_shap_mis
 
-    def load_test_shap(self):
+    def load_test_shap(self, shuffle=True):
         testX_shap, testY_shap = [], []
         for i in range(10):
             files = glob.glob(self._file_path + '/shap_test/{}/*.jpg'.format(i))
@@ -54,7 +54,7 @@ class LoadData(object):
                 img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
                 testX_shap.append(img)
                 testY_shap.append(i)
-        testX_shap, testY_shap = LoadData._data_edit(testX_shap, testY_shap)
+        testX_shap, testY_shap = self._data_edit(testX_shap, testY_shap, shuffle)
         testY_shap = to_categorical(testY_shap)
         return testX_shap, testY_shap
 
@@ -94,13 +94,16 @@ class LoadData(object):
         return testX_random, testY_random
 
     @staticmethod
-    def _data_edit(dataX, dataY):
+    def _data_edit(dataX, dataY, shuffle):
         dataX = np.array(dataX).astype('float32') / 255
         dataY = np.array(dataY)
-        random = np.arange(len(dataX))
-        np.random.shuffle(random)
-        dataX = dataX[random]
-        dataY = dataY[random]
+        if shuffle:
+            random = np.arange(len(dataX))
+            np.random.shuffle(random)
+            dataX = dataX[random]
+            dataY = dataY[random]
+        else:
+            pass
         dataX = dataX.reshape(len(dataX), 28, 28)
         dataX = np.expand_dims(dataX, axis=-1)
         return dataX, dataY

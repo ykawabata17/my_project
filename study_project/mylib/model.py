@@ -1,4 +1,5 @@
 import numpy as np
+
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
 
