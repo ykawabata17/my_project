@@ -16,8 +16,10 @@ class ShapCreate(object):
         trainX = trainX.astype('float32') / 255
         self.images = images
         self.trainX = trainX
-        self.model = load_model('C:/Users/kawabata/study_data/models/org/org10000.h5')
-        background = self.trainX[np.random.choice(self.trainX.shape[0], 100, replace=False)]
+        self.model = load_model(
+            'C:/Users/kawabata/study_data/models/org/org10000.h5')
+        background = self.trainX[np.random.choice(
+            self.trainX.shape[0], 100, replace=False)]
         self.e = shap.DeepExplainer(self.model, background)
 
     def shap_calc(self, img):
@@ -60,7 +62,8 @@ class ShapCreate(object):
                     base_value = base_heat[i][j]
                     comp_value = compare_heat[i][j]
                     if base_value < 0 and comp_value > 0:
-                        if abs(base_value) + abs(comp_value) > values[int(-100)]:  # パラメータ考える必要あり
+                        # パラメータ考える必要あり
+                        if abs(base_value) + abs(comp_value) > values[int(-100)]:
                             index.append((i, j))
             max_value = base_heat.max()
             min_value = base_heat.min()
@@ -101,7 +104,8 @@ class ShapCreate(object):
             shap_value = list(itertools.chain.from_iterable(max_shap))
             max_value = max(shap_value)
             min_value = min(shap_value)
-            norm_values = [value/max_value if value > 0 else -(value/min_value) for value in shap_value]
+            norm_values = [value/max_value if value > 0 else -
+                           (value/min_value) for value in shap_value]
             norm_values = sorted(norm_values)
             # norm_values = [i for i in norm_values if i < -0.01 or i > 0.01]
             # norm_values = [i for i in norm_values if i != 0]
@@ -129,11 +133,13 @@ class ShapCreate(object):
     def plot_shap_10_dimension(self):
         map_dict = {0: [], 1: [], 2: [], 3: [], 4: [],
                     5: [], 6: [], 7: [], 8: [], 9: []}
+        map_list = []
         for img in self.images:
             img = img.reshape(1, 28, 28, 1)
             shap_info = self.shap_calc(img)
+            map_list.append(shap_info['shap_sum'])
             for i in range(10):
                 map_dict[i].append(shap_info['shap_sum'][i])
         for k, v in map_dict.items():
             map_dict[k] = np.array(v)
-        return map_dict
+        return map_dict, map_list
