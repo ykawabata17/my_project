@@ -12,3 +12,14 @@ def data_set_to_dict(dataX, dataY):
     for k, v in data_dict.items():
         data_dict[k] = np.array(v)
     return data_dict
+
+
+def normalization_list(data, max_value=1, min_value=0):
+    data_max = max(data)
+    data_min = min(data)
+    norm_data = []
+    for value in data:
+        y = ((value-data_min) / (data_max-data_min)) * \
+            (max_value-min_value) + min_value
+        norm_data.append(y)
+    return norm_data
