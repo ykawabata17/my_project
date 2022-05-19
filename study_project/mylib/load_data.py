@@ -9,7 +9,7 @@ import numpy as np
 
 class LoadData(object):
     def __init__(self):
-        self._file_path = 'C:/Users/kawabata/study_data'
+        self._file_path = 'C:/Users/kawabata/study_data/images'
 
     @staticmethod
     def load_train_org():
@@ -99,6 +99,18 @@ class LoadData(object):
             testX_random, testY_random)
         testY_random = to_categorical(testY_random)
         return testX_random, testY_random
+
+    def load_add_data(self, kind):
+        dataX, dataY = [], []
+        files = glob.glob(self._file_path + f'/add_data/{kind}/*.jpg')
+        for file in files:
+            img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+            dataX.append(img)
+            num = re.sub(r"\D", "", file)
+            dataY.append(num[0])
+        dataX, dataY = LoadData._data_edit(dataX, dataY, shuffle=False)
+        dataY = to_categorical(dataY)
+        return dataX, dataY
 
     @staticmethod
     def _data_edit(dataX, dataY, shuffle):
