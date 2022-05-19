@@ -10,14 +10,13 @@ from keras.models import load_model
 
 
 class ShapCreate(object):
-    def __init__(self, images):
+    def __init__(self, images, model):
         (trainX, _), _ = mnist.load_data()
         trainX = trainX.reshape((60000, 28, 28, 1))
         trainX = trainX.astype('float32') / 255
         self.images = images
         self.trainX = trainX
-        self.model = load_model(
-            'C:/Users/kawabata/study_data/models/org/org10000.h5')
+        self.model = model
         background = self.trainX[np.random.choice(
             self.trainX.shape[0], 100, replace=False)]
         self.e = shap.DeepExplainer(self.model, background)
@@ -131,15 +130,10 @@ class ShapCreate(object):
         return indexes, max_index
 
     def plot_shap_10_dimension(self):
-        map_dict = {0: [], 1: [], 2: [], 3: [], 4: [],
-                    5: [], 6: [], 7: [], 8: [], 9: []}
         map_list = []
         for img in self.images:
             img = img.reshape(1, 28, 28, 1)
             shap_info = self.shap_calc(img)
             map_list.append(shap_info['shap_sum'])
-            for i in range(10):
-                map_dict[i].append(shap_info['shap_sum'][i])
-        for k, v in map_dict.items():
-            map_dict[k] = np.array(v)
-        return map_dict, map_list
+
+        return map_list

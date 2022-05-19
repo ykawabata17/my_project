@@ -12,5 +12,6 @@ def random_noise(eps=0.3):
         h, w = img.shape[:2]
         noise = np.random.randint(0, eps * 300, (h, w))
         img = img + noise
-        cv2.imwrite('C:/Users/kawabata/study_data/random/{}.jpg'.format(i), img)
+        cv2.imwrite(
+            'C:/Users/kawabata/study_data/images/random/{}.jpg'.format(i), img)
         i += 1
