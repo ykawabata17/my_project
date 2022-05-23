@@ -1,3 +1,5 @@
+from tarfile import REGTYPE
+from webbrowser import get
 import numpy as np
 
 from tensorflow.keras.optimizers import Adam
@@ -5,11 +7,15 @@ from tensorflow.keras.utils import to_categorical
 
 from .create_cnn import CNNModel
 from .load_data import LoadData
+from mylib.utils import  get_home_path
+
+
+PATH = get_home_path()
 
 
 class ModelCreate(object):
     def __init__(self):
-        self._file_path = 'C:/Users/kawabata/study_data/'
+        self._file_path = PATH
 
         """
         使用するデータを読み込む

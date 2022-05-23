@@ -1,12 +1,16 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from os.path import expanduser
 
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 from mylib.load_data import LoadData
 
 
-PATH = 'C:/Users/kawabata/study_data/'
+def get_home_path():
+    return expanduser("~") + '/study_data/'
+
+PATH = get_home_path()
 
 
 def data_set_to_dict(dataX, dataY):
