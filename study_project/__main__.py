@@ -1,15 +1,14 @@
 import json
 import numpy as np
 
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 from mylib.calc_shap import ShapCreate
 from mylib.load_data import LoadData
-from mylib.utils import data_set_to_dict
-from mylib.utils import normalization_list
+from mylib.utils import data_set_to_dict, normalization_list, get_home_path
 
 
-PATH = 'C:/Users/kawabata/study_data/'
+PATH = get_home_path()
 
 
 def add_plot_data(kind):
@@ -35,7 +34,7 @@ def add_plot_data(kind):
 
 
 def main():
-    models = ['org', 'prop', 'at', 'hybrid']
+    models = ['prop', 'at', 'hybrid']
     datas = ['shap', 'ae']
     for model in models:
         for data in datas:

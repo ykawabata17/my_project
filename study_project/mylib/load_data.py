@@ -1,15 +1,18 @@
+import cv2
 import glob
+import numpy as np
+from os.path import expanduser
 import re
 
-import cv2
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import to_categorical
-import numpy as np
 
+
+PATH = expanduser("~") + '/study_data/'
 
 class LoadData(object):
     def __init__(self):
-        self._file_path = 'C:/Users/kawabata/study_data/images'
+        self._file_path = PATH + 'images'
 
     @staticmethod
     def load_train_org():

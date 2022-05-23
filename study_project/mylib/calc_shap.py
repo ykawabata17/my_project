@@ -5,13 +5,11 @@ import random
 import shap
 
 from tensorflow.keras.datasets import mnist
-from keras.models import load_model
 
-from mylib.load_data import LoadData
-from mylib.utils import data_set_to_dict, normalization_list, model_data_load
+from mylib.utils import data_set_to_dict, normalization_list, model_data_load, get_home_path
 
-PATH = 'C:/Users/kawabata/study_data/'
 
+PATH = get_home_path()
 
 class ShapCreate(object):
     def __init__(self, images, model):
