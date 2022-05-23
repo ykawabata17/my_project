@@ -1,6 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+from keras.models import load_model
+
+from mylib.load_data import LoadData
+
+
+PATH = 'C:/Users/kawabata/study_data/'
+
 
 def data_set_to_dict(dataX, dataY):
     data_dict = {}
@@ -59,3 +66,32 @@ def create_2d_heatmap(data_dict):
         x, y = dim_reduction_umap(dataX)
         for n in np.unique(dataY):
             plt.scatter(x[dataY == n], y[dataY == n], label=n)
+
+
+def model_data_load(model_name, data_name):
+    """
+    model: (org, prop, at, hybrid)
+    data: (org, shap, ae, random)
+    """
+    # モデルの読み込み
+    if model_name == 'org':
+        model = load_model(PATH + 'models/org/org20000.h5')
+    elif model_name == 'prop':
+        model = load_model(PATH + 'models/org_shap/org10000_shap10000.h5')
+    elif model_name == 'at':
+        model = load_model(PATH + 'models/org_ae/org10000_ae10000.h5')
+    elif model_name == 'hybrid':
+        model = load_model(
+            PATH + 'models/org_shap_ae/org10000_shap5000_ae5000.h5')
+    # データの読み込み
+    data_loader = LoadData()
+    if data_name == 'org':
+        dataX, dataY = data_loader.load_test_org(shuffle=False)
+    elif data_name == 'shap':
+        dataX, dataY = data_loader.load_test_shap(shuffle=False)
+    elif data_name == 'ae':
+        dataX, dataY = data_loader.load_test_ae(shuffle=False)
+    elif data_name == 'random':
+        dataX, dataY = data_loader.load_test_random(shuffle=False)
+
+    return model, dataX, dataY

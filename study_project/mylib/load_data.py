@@ -18,9 +18,10 @@ class LoadData(object):
         return trainX_org, trainY_org
 
     @staticmethod
-    def load_test_org():
+    def load_test_org(shuffle=True):
         _, (testX_org, testY_org) = mnist.load_data()
-        testX_org, testY_org = LoadData._data_edit(testX_org, testY_org)
+        testX_org, testY_org = LoadData._data_edit(
+            testX_org, testY_org, shuffle)
         testY_org = to_categorical(testY_org)
         return testX_org, testY_org
 
@@ -87,7 +88,7 @@ class LoadData(object):
         testY_ae = to_categorical(testY_ae)
         return testX_ae, testY_ae
 
-    def load_test_random(self):
+    def load_test_random(self, shuffle=True):
         testX_random, testY_random = [], []
         files = glob.glob(self._file_path + '/random_test/*.jpg')
         for file in files:
@@ -96,7 +97,7 @@ class LoadData(object):
             num = re.sub(r"\D", "", file)
             testY_random.append(num[0])
         testX_random, testY_random = LoadData._data_edit(
-            testX_random, testY_random)
+            testX_random, testY_random, shuffle)
         testY_random = to_categorical(testY_random)
         return testX_random, testY_random
 

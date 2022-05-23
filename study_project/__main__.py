@@ -35,28 +35,12 @@ def add_plot_data(kind):
 
 
 def main():
-    data_loader = LoadData()
-    model = load_model(PATH + 'models/org_ae/org10000_ae10000.h5')
-    testX, testY = data_loader.load_test_shap(shuffle=False)
-    data_dict = data_set_to_dict(testX, testY)
-    dataX = []
-    for label, data in data_dict.items():
-        shap_create = ShapCreate(data, model)
-        map_list = shap_create.plot_shap_10_dimension()
-        map_norm_list = []
-        for map_value in map_list:
-            norm_value = normalization_list(map_value, 1, 0)
-            map_norm_list.append(norm_value)
-        dataX.append(map_norm_list)
-        print(label)
-    map_data = {}
-    for index, data in enumerate(dataX):
-        map_data[index] = data
-    with open(PATH + 'data/at_shap.json', 'w') as f:
-        f.write(json.dumps(map_data))
+    models = ['org', 'prop', 'at', 'hybrid']
+    datas = ['shap', 'ae']
+    for model in models:
+        for data in datas:
+            ShapCreate.create_heatmap(model, data)
 
 
 if __name__ == '__main__':
-    add_plot_data(kind='ae')
-    add_plot_data(kind='shap')
-    add_plot_data(kind='random')
+    main()

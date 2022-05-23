@@ -1,12 +1,16 @@
-import itertools
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import random
 import shap
-from statistics import variance
 
 from tensorflow.keras.datasets import mnist
 from keras.models import load_model
+
+from mylib.load_data import LoadData
+from mylib.utils import data_set_to_dict, normalization_list, model_data_load
+
+PATH = 'C:/Users/kawabata/study_data/'
 
 
 class ShapCreate(object):
@@ -88,46 +92,11 @@ class ShapCreate(object):
 
     def shap_visu(self, file):
         shap.image_plot(self.shap_info['shap_values'], self.img, show=False)
-        plt.savefig('C:/Users/kawabata/study_data/{}_heat.png'.format(file))
+        plt.savefig(PATH + 'study_data/{}_heat.png'.format(file))
         plt.close()
         plt.bar(range(0, 10), self.shap_info['shap_sum'])
-        plt.savefig('C:/Users/kawabata/study_data/{}_bar.png'.format(file))
+        plt.savefig(PATH + 'study_data/{}_bar.png'.format(file))
         plt.close()
-
-    def variance_max_shap(self):
-        variances = []
-        for img in self.images:
-            img = img.rehsape(1, 28, 28, 1)
-            shap_info = self.shap_calc(img)
-            max_shap = shap_info['max_shap']
-            shap_value = list(itertools.chain.from_iterable(max_shap))
-            max_value = max(shap_value)
-            min_value = min(shap_value)
-            norm_values = [value/max_value if value > 0 else -
-                           (value/min_value) for value in shap_value]
-            norm_values = sorted(norm_values)
-            # norm_values = [i for i in norm_values if i < -0.01 or i > 0.01]
-            # norm_values = [i for i in norm_values if i != 0]
-            # x = range(len(norm_values))
-            # plt.plot(x, norm_values)
-            # plt.show()
-            variances.append(variance(norm_values))
-        return variances
-
-    def plot_max_shap(self):
-        max_shap = self.shap_info['max_shap']
-        max_index = self.shap_info['max_index']
-        indexes = []
-        shap_values = sorted(list(itertools.chain.from_iterable(max_shap)))
-        i = 0
-        for value in reversed(shap_values):
-            idx = np.where(max_shap == value)
-            index = [idx[0][0], idx[1][0]]
-            indexes.append(index)
-            i += 1
-            if i == 3:
-                break
-        return indexes, max_index
 
     def plot_shap_10_dimension(self):
         map_list = []
@@ -135,5 +104,39 @@ class ShapCreate(object):
             img = img.reshape(1, 28, 28, 1)
             shap_info = self.shap_calc(img)
             map_list.append(shap_info['shap_sum'])
-
         return map_list
+
+    def heatmap_all_sum(self, model_name, data_name):
+        """
+        model: (org, prop, at, hybrid)
+        data: (org, shap, ae, random)
+        """
+        model, dataX, dataY = model_data_load(model_name, data_name)
+        data_dict = data_set_to_dict(dataX, dataY)
+        for label, data in data_dict.items():
+            shap_create = ShapCreate(data, model)
+
+    @staticmethod
+    def create_heatmap(model_name, data_name):
+        """
+        model: (org, prop, at, hybrid)
+        data: (org, shap, ae, random)
+        """
+        model, dataX, dataY = model_data_load(model_name, data_name)
+        data_dict = data_set_to_dict(dataX, dataY)
+
+        dataX = []
+        for label, data in data_dict.items():
+            shap_create = ShapCreate(data, model)
+            map_list = shap_create.plot_shap_10_dimension()
+            map_norm_list = []
+            for map_value in map_list:
+                norm_value = normalization_list(map_value, 1, 0)
+                map_norm_list.append(norm_value)
+            dataX.append(map_norm_list)
+            print(label)
+        map_data = {}
+        for index, data in enumerate(dataX):
+            map_data[index] = data
+        with open(PATH + f'data/{model_name}_{data_name}.json', 'w') as f:
+            f.write(json.dumps(map_data))
