@@ -4,7 +4,7 @@ from os.path import expanduser
 
 from tensorflow.keras.models import load_model
 
-from mylib.load_data import LoadData
+from .load_data import LoadData
 
 
 def get_home_path():

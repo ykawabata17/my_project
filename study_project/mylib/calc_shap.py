@@ -24,7 +24,7 @@ class ShapCreate(object):
         self.e = shap.DeepExplainer(self.model, background)
 
     def shap_calc(self, img):
-        shap_values = self.e.shap_values(img)
+        shap_values = self.e.shap_values(img, check_additivity=False)
         shap_sum = []
         shap_sum.clear()
         s = np.array(shap_values)
@@ -138,3 +138,4 @@ class ShapCreate(object):
             map_data[index] = data
         with open(PATH + f'data/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
+        print(f"comp create heatmap! {model_name}_{data_name}")
