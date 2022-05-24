@@ -34,7 +34,7 @@ def add_plot_data(kind):
 
 
 def main():
-    models = ['prop', 'at', 'hybrid']
+    models = ['at', 'hybrid']
     datas = ['shap', 'ae']
     for model in models:
         for data in datas:

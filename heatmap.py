@@ -1,10 +1,11 @@
 import json
+from webbrowser import get
 from matplotlib import pyplot as plt
 
-from study_project.mylib.utils import create_2d_heatmap
+from study_project.mylib.utils import create_2d_heatmap, get_home_path
 
 
-PATH = 'C:/Users/kawabata/study_data/'
+PATH = get_home_path()
 
 
 if __name__ == "__main__":
