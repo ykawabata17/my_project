@@ -5,11 +5,13 @@ import random
 import shap
 
 from tensorflow.keras.datasets import mnist
+from tqdm import tqdm
 
 from mylib.utils import data_set_to_dict, normalization_list, model_data_load, get_home_path
 
 
 PATH = get_home_path()
+
 
 class ShapCreate(object):
     def __init__(self, images, model):
@@ -28,6 +30,7 @@ class ShapCreate(object):
         shap_sum = []
         shap_sum.clear()
         s = np.array(shap_values)
+        shap_values = s.reshape(10, 28, 28)
         for i in range(10):
             shap_sum.append(np.sum(s[i]))
         max_index = np.argmax(shap_sum)
@@ -96,23 +99,37 @@ class ShapCreate(object):
         plt.savefig(PATH + 'study_data/{}_bar.png'.format(file))
         plt.close()
 
-    def plot_shap_10_dimension(self):
-        map_list = []
-        for img in self.images:
-            img = img.reshape(1, 28, 28, 1)
-            shap_info = self.shap_calc(img)
-            map_list.append(shap_info['shap_sum'])
-        return map_list
-
-    def heatmap_all_sum(self, model_name, data_name):
+    @staticmethod
+    def heatmap_all_sum(model_name, data_name):
         """
         model: (org, prop, at, hybrid)
         data: (org, shap, ae, random)
         """
+        shap_sum_dict = {}
         model, dataX, dataY = model_data_load(model_name, data_name)
         data_dict = data_set_to_dict(dataX, dataY)
         for label, data in data_dict.items():
             shap_create = ShapCreate(data, model)
+            shap_sum = np.array([[0.0] * 784] * 10)
+            norm_values = []
+
+            # このループでラベルが同じ画像のshap値を足し合わせる
+            for img in tqdm(data):
+                img = img.reshape(1, 28, 28, 1)
+                shap_info = shap_create.shap_calc(img)
+                shap_values = shap_info['shap_values'].reshape(10, 784)
+                shap_sum += shap_values
+            # このループで足し合わせたshap値を正規化(-1~1)する
+            for value in shap_sum:
+                norm_value = normalization_list(
+                    value, max_value=1, min_value=-1)
+                norm_values.append(norm_value)
+
+            shap_sum_dict[label] = norm_values
+            print(label)
+        with open(PATH + f'data/shap_sum/{model_name}_{data_name}.json', 'w') as f:
+            f.write(json.dumps(shap_sum_dict))
+        print(f"comp create shap_sum dict! {model_name}_{data_name}")
 
     @staticmethod
     def create_heatmap(model_name, data_name):
@@ -122,20 +139,23 @@ class ShapCreate(object):
         """
         model, dataX, dataY = model_data_load(model_name, data_name)
         data_dict = data_set_to_dict(dataX, dataY)
-
         dataX = []
+        map_data = {}
         for label, data in data_dict.items():
             shap_create = ShapCreate(data, model)
-            map_list = shap_create.plot_shap_10_dimension()
+            map_list = []
             map_norm_list = []
+            for img in tqdm(data):
+                img = img.reshape(1, 28, 28, 1)
+                shap_info = shap_create.shap_calc(img)
+                map_list.append(shap_info['shap_sum'])
             for map_value in map_list:
                 norm_value = normalization_list(map_value, 1, 0)
                 map_norm_list.append(norm_value)
             dataX.append(map_norm_list)
             print(label)
-        map_data = {}
         for index, data in enumerate(dataX):
             map_data[index] = data
-        with open(PATH + f'data/{model_name}_{data_name}.json', 'w') as f:
+        with open(PATH + f'data/shap_all/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
-        print(f"comp create heatmap! {model_name}_{data_name}")
+        print(f"comp create all_shap dict! {model_name}_{data_name}")
