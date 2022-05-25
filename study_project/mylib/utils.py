@@ -1,14 +1,17 @@
+import json
 import numpy as np
 from matplotlib import pyplot as plt
 from os.path import expanduser
 
 from tensorflow.keras.models import load_model
+import umap.umap_ as umap
 
 from .load_data import LoadData
 
 
 def get_home_path():
     return expanduser("~") + '/study_data/'
+
 
 PATH = get_home_path()
 
@@ -44,10 +47,9 @@ def dim_reduction_umap(data,
                        min_dist=0.1):
     """
     UMAPを用いて次元削減し、プロットする点を配列で返す関数
-    data: shape(データ数, 10)
+    data: shape(データ数, 削減したい次元数)
     return x, y: (配列)
     """
-    import umap.umap_ as umap
     mapper = umap.UMAP(n_components=2,
                        n_neighbors=n_neighbor,
                        random_state=random_state,
@@ -75,7 +77,7 @@ def create_2d_heatmap(data_dict):
 def model_data_load(model_name, data_name):
     """
     model: (org, prop, at, hybrid)
-    data: (org, shap, ae, random)
+    data: (org, shap, ae, random, test)
     """
     # モデルの読み込み
     if model_name == 'org':
@@ -97,5 +99,7 @@ def model_data_load(model_name, data_name):
         dataX, dataY = data_loader.load_test_ae(shuffle=False)
     elif data_name == 'random':
         dataX, dataY = data_loader.load_test_random(shuffle=False)
+    elif data_name == 'test':
+        dataX, dataY = data_loader.load_test_data(shuffle=False)
 
     return model, dataX, dataY

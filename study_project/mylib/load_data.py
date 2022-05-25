@@ -10,6 +10,21 @@ from tensorflow.keras.utils import to_categorical
 
 PATH = expanduser("~") + '/study_data/'
 
+
+def load_img(folder_name, shuffle=True):
+    dataX, dataY = [], []
+    for i in range(10):
+        files = glob.glob(PATH + f'images/{folder_name}/{i}/*.jpg')
+        for file in files:
+            img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+            dataX.append(img)
+            dataY.append(i)
+    dataX, dataY = LoadData._data_edit(
+        dataX, dataY, shuffle)
+    dataY = to_categorical(dataY)
+    return dataX, dataY
+
+
 class LoadData(object):
     def __init__(self):
         self._file_path = PATH + 'images'
@@ -29,80 +44,35 @@ class LoadData(object):
         return testX_org, testY_org
 
     def load_train_shap(self):
-        trainX_shap, trainY_shap = [], []
-        for i in range(10):
-            files = glob.glob(self._file_path +
-                              '/shap_train/{}/*.jpg'.format(i))
-            for file in files:
-                img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-                trainX_shap.append(img)
-                trainY_shap.append(i)
-        trainX_shap, trainY_shap = LoadData._data_edit(
-            trainX_shap, trainY_shap)
+        trainX_shap, trainY_shap = load_img('ae_train')
         return trainX_shap, trainY_shap
 
     def load_train_shap_mis(self):
-        trainX_shap_mis, trainY_shap_mis = [], []
-        for i in range(10):
-            files = glob.glob(self._file_path +
-                              '/shap_train_mis/{}/*.jpg'.format(i))
-            for file in files:
-                img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-                trainX_shap_mis.append(img)
-                trainY_shap_mis.append(i)
-        trainX_shap_mis, trainY_shap_mis = LoadData._data_edit(
-            trainX_shap_mis, trainY_shap_mis)
+        trainX_shap_mis, trainY_shap_mis = load_img('shap_train_mis')
         return trainX_shap_mis, trainY_shap_mis
 
     def load_test_shap(self, shuffle=True):
-        testX_shap, testY_shap = [], []
-        for i in range(10):
-            files = glob.glob(self._file_path +
-                              '/shap_test/{}/*.jpg'.format(i))
-            for file in files:
-                img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-                testX_shap.append(img)
-                testY_shap.append(i)
-        testX_shap, testY_shap = self._data_edit(
-            testX_shap, testY_shap, shuffle)
-        testY_shap = to_categorical(testY_shap)
+        testX_shap, testY_shap = load_img('shap_test', shuffle)
         return testX_shap, testY_shap
 
     def load_train_ae(self):
-        trainX_ae, trainY_ae = [], []
-        files = glob.glob(self._file_path + '/sample_train/*.jpg')
-        for img in files:
-            num = re.sub(r"\D", "", img)
-            img = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
-            trainX_ae.append(img)
-            trainY_ae.append(num[0])
-        trainX_ae, trainY_ae = LoadData._data_edit(trainX_ae, trainY_ae)
+        trainX_ae, trainY_ae = load_img('ae_train')
         return trainX_ae, trainY_ae
 
     def load_test_ae(self, shuffle=True):
-        testX_ae, testY_ae = [], []
-        files = glob.glob(self._file_path + '/sample_test/*.jpg')
-        for file in files:
-            img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-            testX_ae.append(img)
-            num = re.sub(r"\D", "", file)
-            testY_ae.append(num[0])
-        testX_ae, testY_ae = LoadData._data_edit(testX_ae, testY_ae, shuffle)
-        testY_ae = to_categorical(testY_ae)
+        testX_ae, testY_ae = load_img('ae_test', shuffle)
         return testX_ae, testY_ae
 
     def load_test_random(self, shuffle=True):
-        testX_random, testY_random = [], []
-        files = glob.glob(self._file_path + '/random_test/*.jpg')
-        for file in files:
-            img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-            testX_random.append(img)
-            num = re.sub(r"\D", "", file)
-            testY_random.append(num[0])
-        testX_random, testY_random = LoadData._data_edit(
-            testX_random, testY_random, shuffle)
-        testY_random = to_categorical(testY_random)
+        testX_random, testY_random = load_img('random_test', shuffle)
         return testX_random, testY_random
+
+    def load_test_data(self, shuffle=True):
+        """
+        プログラムの挙動をテストするためのデータ(データ数は10枚)
+        """
+        testX, testY = load_img('test_data', shuffle)
+        return testX, testY
 
     def load_add_data(self, kind):
         dataX, dataY = [], []
