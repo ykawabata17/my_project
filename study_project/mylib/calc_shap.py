@@ -7,7 +7,11 @@ import shap
 from tensorflow.keras.datasets import mnist
 from tqdm import tqdm
 
-from mylib.utils import data_set_to_dict, normalization_list, model_data_load, get_home_path
+from mylib.utils import data_set_to_dict
+from mylib.utils import normalization_list
+from mylib.utils import model_data_load
+from mylib.utils import get_home_path
+from mylib.utils import dim_reduction_umap
 
 
 PATH = get_home_path()
@@ -159,3 +163,26 @@ class ShapCreate(object):
         with open(PATH + f'data/shap_all/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
         print(f"comp create all_shap dict! {model_name}_{data_name}")
+
+    @staticmethod
+    def heatmap_to_umap(model_name, data_name):
+        """
+        model: (org, prop, at, hybrid)
+        data: (org, shap, ae, random)
+        """
+        model, dataX, dataY = model_data_load(model_name, data_name)
+        data_dict = data_set_to_dict(dataX, dataY)
+        map_data = {}
+        for label, data in data_dict.items():
+            all_shap_sum = []
+            shap_create = ShapCreate(data, model)
+            for img in tqdm(data):
+                img = img.reshape(1, 28, 28, 1)
+                shap_info = shap_create.shap_calc(img)
+                shap_values = shap_info['shap_values'].reshape(10, 784)
+                # 10*784のshap値を足し合わせて1*784にして、list型に変換
+                shap_sum = list(map(sum, zip(*shap_values)))
+                all_shap_sum.append(shap_sum)
+            map_data[label] = all_shap_sum
+        with open(PATH + f'data/shap_sum_all/{model_name}_{data_name}.json', 'w') as f:
+            f.write(json.dumps(map_data))
