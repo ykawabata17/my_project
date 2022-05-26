@@ -1,10 +1,16 @@
+import glob
+import json
+from matplotlib import pyplot as plt
+
 import optuna
 import scipy
 from umap import UMAP
-from sklearn import datasets
-import matplotlib.pyplot as plt
+import numpy as np
 
-dataset = datasets.load_diabetes()
+from study_project.mylib.utils import get_home_path
+
+
+PATH = get_home_path()
 
 
 def classification_scorer(X, Y, alpha=1e-3):
@@ -37,8 +43,7 @@ class SupervisedUMAP:
         n_neighbors = trial.suggest_int("n_neighbors", 2, len(self.Y))
         min_dist = trial.suggest_uniform("min_dist", 0.0, 0.99)
         metric = trial.suggest_categorical("metric",
-                                           ["euclidean", "manhattan", "chebyshev", "minkowski", "canberra",
-                                            "braycurtis", "mahalanobis", "cosine", "correlation"])
+                                           ["euclidean"])
 
         mapper = UMAP(
             n_neighbors=n_neighbors,
@@ -54,13 +59,40 @@ class SupervisedUMAP:
             self.best_model = mapper
 
             print(self.best_model)
+            title = 'trial={0}, score={1:.3e}'.format(trial.number, score)
+            plt.title(title)
+            plt.scatter(embedding[:, 0], embedding[:, 1],
+                        c=self.Y, alpha=0.5)
+            plt.colorbar()
+            plt.show()
 
         return score
 
 
-objective = SupervisedUMAP(dataset.data, dataset.target, classification_scorer)
-print(dataset.data)
-print(dataset.target)
-print(type(dataset.target[0]))
-study = optuna.create_study(direction="minimize")
-study.optimize(objective, n_trials=100)
+def data_set(map_data):
+    dataX = []
+    dataY = []
+    for k, v in map_data.items():
+        for data in v:
+            dataX.append(data)
+            dataY.append(int(k))
+    return dataX, dataY
+
+
+def main():
+    print("start")
+    map_datas = glob.glob(PATH + 'data/shap_all/*.json')
+    for map_data in map_datas:
+        print(map_data)
+        with open(map_data, 'r') as f:
+            decode_data = json.load(f)
+        dataX, dataY = data_set(decode_data)
+        print("データ読み込み完了")
+
+        objective = SupervisedUMAP(dataX, dataY, classification_scorer)
+        study = optuna.create_study(direction="minimize")
+        study.optimize(objective, n_trials=100)
+
+
+if __name__ == "__main__":
+    main()
