@@ -1,6 +1,4 @@
 import json
-import optuna
-import scipy
 import numpy as np
 from matplotlib import pyplot as plt
 from os.path import expanduser, basename, splitext
@@ -149,68 +147,3 @@ def model_data_load(model_name, data_name):
         dataX, dataY = data_loader.load_test_data(shuffle=False)
 
     return model, dataX, dataY
-
-
-
-
-def classification_scorer(X, Y, alpha=1e-3):
-    sum = 0
-    n1 = 0
-    for x1, y1 in zip(X, Y):
-        n1 += 1
-        n2 = 0
-        for x2, y2 in zip(X, Y):
-            n2 += 1
-            if n1 > n2:
-                dist = ((x1[0] - x2[0])**2 + (x1[1] - x2[1])**2) + 1e-53
-                if y1 != y2:
-                    sum += 1 / dist
-                else:
-                    pass
-
-    return sum / (len(Y) * (len(Y) - 1) / 2)
-
-
-class SupervisedUMAP:
-    def __init__(self, X, Y, scorer, file_name):
-        self.X = X
-        self.Y = Y
-        self.scorer = scorer
-        self.best_score = 1e53
-        self.best_model = None
-        self.folder_name = file_name
-
-    def __call__(self, trial):
-        n_neighbors = trial.suggest_int("n_neighbors", 2, 100)
-        min_dist = trial.suggest_uniform("min_dist", 0.0, 0.99)
-        metric = trial.suggest_categorical("metric",
-                                           ["euclidean", "manhattan", "chebyshev", "minkowski", "canberra", 
-                                            "braycurtis", "mahalanobis", "cosine", "correlation"])
-        # para_history = {}
-        mapper = umap.UMAP(
-            n_neighbors=n_neighbors,
-            min_dist=min_dist,
-            metric=metric
-        )
-        mapper.fit(self.X)
-        embedding = mapper.transform(self.X)
-        score = self.scorer(scipy.stats.zscore(embedding), self.Y)
-        
-        if self.best_score > score:
-            self.best_score = score
-            self.best_model = mapper
-
-            print(self.best_model)
-            title = 'trial={0}, score={1:.3e}'.format(trial.number, score)
-            title += f'\nn_neighbors={n_neighbors}, min_dist={min_dist}, metric={metric}'
-            # para_history[trial.number] = [f'n_neighbors:{n_neighbors}.\t'
-            #                               f'min_dist:{min_dist}.\t'
-            #                               f'metric:{metric}.\n']
-            plt.figure()
-            plt.title(title)
-            for n in np.unique(self.Y):
-                plt.scatter(embedding[:, 0][self.Y == n], embedding[:, 1][self.Y == n], label=n)
-            plt.grid()
-            plt.legend()
-            plt.savefig(PATH + f'plot/study_history_folder/{self.folder_name}/{trial.number}.png')
-        return score

@@ -1,13 +1,14 @@
 import glob
 import json
-from matplotlib import pyplot as plt
+import os
 
+from matplotlib import pyplot as plt
+import numpy as np
 import optuna
 import scipy
-from umap import UMAP
-import numpy as np
+import umap.umap_ as umap
 
-from study_project.mylib.utils import get_home_path
+from study_project.mylib.utils import get_home_path, data_set
 
 
 PATH = get_home_path()
@@ -32,20 +33,20 @@ def classification_scorer(X, Y, alpha=1e-3):
 
 
 class SupervisedUMAP:
-    def __init__(self, X, Y, scorer):
+    def __init__(self, X, Y, scorer, file_name):
         self.X = X
         self.Y = Y
         self.scorer = scorer
         self.best_score = 1e53
         self.best_model = None
+        self.folder_name = file_name
 
     def __call__(self, trial):
-        n_neighbors = trial.suggest_int("n_neighbors", 2, len(self.Y))
+        n_neighbors = trial.suggest_int("n_neighbors", 2, 100)
         min_dist = trial.suggest_uniform("min_dist", 0.0, 0.99)
-        metric = trial.suggest_categorical("metric",
-                                           ["euclidean"])
-
-        mapper = UMAP(
+        metric = trial.suggest_categorical("metric", ["canberra"])
+        # para_history = {}
+        mapper = umap.UMAP(
             n_neighbors=n_neighbors,
             min_dist=min_dist,
             metric=metric
@@ -53,46 +54,38 @@ class SupervisedUMAP:
         mapper.fit(self.X)
         embedding = mapper.transform(self.X)
         score = self.scorer(scipy.stats.zscore(embedding), self.Y)
-
+        
         if self.best_score > score:
             self.best_score = score
             self.best_model = mapper
 
             print(self.best_model)
             title = 'trial={0}, score={1:.3e}'.format(trial.number, score)
+            title += f'\nn_neighbors={n_neighbors}, min_dist={min_dist}, metric={metric}'
+            
+            plt.figure()
             plt.title(title)
-            plt.scatter(embedding[:, 0], embedding[:, 1],
-                        c=self.Y, alpha=0.5)
-            plt.colorbar()
-            plt.show()
-
+            for n in np.unique(self.Y):
+                plt.scatter(embedding[:, 0][self.Y == n], embedding[:, 1][self.Y == n], label=n)
+            plt.grid()
+            plt.legend()
+            plt.savefig(PATH + f'plot/study_history_folder2/{self.folder_name}/{trial.number}.png')
         return score
 
 
-def data_set(map_data):
-    dataX = []
-    dataY = []
-    for k, v in map_data.items():
-        for data in v:
-            dataX.append(data)
-            dataY.append(int(k))
-    return dataX, dataY
-
-
 def main():
-    print("start")
-    map_datas = glob.glob(PATH + 'data/shap_all/*.json')
+    map_datas = glob.glob(PATH + 'data/shap_all/*_shap.json')
     for map_data in map_datas:
-        print(map_data)
+        file_name = os.path.splitext(os.path.basename(map_data))[0]
         with open(map_data, 'r') as f:
             decode_data = json.load(f)
         dataX, dataY = data_set(decode_data)
         print("データ読み込み完了")
-
-        objective = SupervisedUMAP(dataX, dataY, classification_scorer)
+        objective = SupervisedUMAP(dataX, dataY, classification_scorer, file_name)
         study = optuna.create_study(direction="minimize")
+        print("学習開始")        
         study.optimize(objective, n_trials=100)
 
 
-if __name__ == "__main__":
+if __name__=='__main__':
     main()
