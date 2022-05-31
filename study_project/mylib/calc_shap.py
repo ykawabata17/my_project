@@ -150,5 +150,6 @@ class ShapCreate(object):
                 shap_sum = list(map(sum, zip(*shap_values)))
                 all_shap_sum.append(shap_sum)
             map_data[label] = all_shap_sum
-        with open(PATH + f'data/shap_sum_all/{model_name}_{data_name}.json', 'w') as f:
+        with open(PATH + f'data/shap_sum/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
+        print(f"comp create shap_sum dict! {model_name}_{data_name}")

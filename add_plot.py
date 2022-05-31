@@ -28,14 +28,12 @@ def add_plot_to_map(dataX, dataY, add_file, model, parameter):
     shap_info = shap_create.shap_calc(img)
     shap_sum = shap_info['shap_sum']
     add_data_shap = normalization_list(shap_sum, 1, 0)
-    print(dataY)
     dataX = dataX.tolist()
     dataX.append(add_data_shap)
     dataY = dataY.tolist()
     dataY.append('add_data')
     dataX = np.array(dataX)
     dataY = np.array(dataY)
-    print(dataY)
     
     # 追加データも加えてマップ作成
     mapper = umap.UMAP(n_components=2,
@@ -58,16 +56,20 @@ def add_plot_to_map(dataX, dataY, add_file, model, parameter):
 
 def main(**kwargs):
     map_datas = glob.glob(PATH + 'data/shap_all/*_shap.json')
-    parameter = {'n_neighbors': 6, 'min_dist': 0.76817, 'metric': 'canberra'}
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
+        print(file_name)
         if file_name == 'at_shap':
+            parameter = {'n_neighbors': 6, 'min_dist': 0.768167, 'metric': 'canberra'}
             model = load_model(PATH + 'models/org_ae/org10000_ae10000.h5')
         elif file_name == 'org_shap':
+            parameter = {'n_neighbors': 4, 'min_dist': 0.927820, 'metric': 'canberra'}
             model = load_model(PATH + 'models/org/org20000.h5')
         elif file_name == 'hybrid_shap':
+            parameter = {'n_neighbors': 10, 'min_dist': 0.782874, 'metric': 'canberra'}
             model = load_model(PATH + 'models/org_shap_ae/org10000_shap5000_ae5000.h5')
         elif file_name == 'prop_shap':
+            parameter = {'n_neighbors': 10, 'min_dist': 0.934518, 'metric': 'canberra'}
             model = load_model(PATH + 'models/org_shap/org10000_shap10000.h5')
         with open(map_data, 'r') as f:
             decode_data = json.load(f)

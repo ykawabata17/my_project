@@ -69,12 +69,12 @@ class SupervisedUMAP:
                 plt.scatter(embedding[:, 0][self.Y == n], embedding[:, 1][self.Y == n], label=n)
             plt.grid()
             plt.legend()
-            plt.savefig(PATH + f'plot/study_history_folder2/{self.folder_name}/{trial.number}.png')
+            plt.savefig(PATH + f'plot/study_history_sum/{self.folder_name}/{trial.number}.png')
         return score
 
 
 def main():
-    map_datas = glob.glob(PATH + 'data/shap_all/*_shap.json')
+    map_datas = glob.glob(PATH + 'data/shap_sum/*.json')
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
         with open(map_data, 'r') as f:
