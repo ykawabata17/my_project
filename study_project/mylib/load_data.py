@@ -15,6 +15,7 @@ def load_img(folder_name, shuffle=True):
     dataX, dataY = [], []
     for i in range(10):
         files = glob.glob(PATH + f'images/{folder_name}/{i}/*.jpg')
+        files = files[:300]
         for file in files:
             img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
             dataX.append(img)
@@ -47,8 +48,8 @@ class LoadData(object):
         trainX_shap, trainY_shap = load_img('ae_train')
         return trainX_shap, trainY_shap
 
-    def load_train_shap_mis(self):
-        trainX_shap_mis, trainY_shap_mis = load_img('shap_train_mis')
+    def load_train_shap_mis(self, shuffle=True):
+        trainX_shap_mis, trainY_shap_mis = load_img('shap_train_mis', shuffle)
         return trainX_shap_mis, trainY_shap_mis
 
     def load_test_shap(self, shuffle=True):

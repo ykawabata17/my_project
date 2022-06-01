@@ -105,7 +105,7 @@ class ShapCreate(object):
     def create_heatmap(model_name, data_name):
         """
         model: (org, prop, at, hybrid)
-        data: (org, shap, ae, random)
+        data: (org, shap, ae, random, shap_mis)
         """
         model, dataX, dataY = model_data_load(model_name, data_name)
         data_dict = data_set_to_dict(dataX, dataY)
@@ -134,7 +134,7 @@ class ShapCreate(object):
     def heatmap_to_umap(model_name, data_name):
         """
         model: (org, prop, at, hybrid)
-        data: (org, shap, ae, random)
+        data: (org, shap, ae, random, shap_mis)
         """
         model, dataX, dataY = model_data_load(model_name, data_name)
         data_dict = data_set_to_dict(dataX, dataY)
@@ -148,8 +148,9 @@ class ShapCreate(object):
                 shap_values = shap_info['shap_values'].reshape(10, 784)
                 # 10*784のshap値を足し合わせて1*784にして、list型に変換
                 shap_sum = list(map(sum, zip(*shap_values)))
-                all_shap_sum.append(shap_sum)
+                shap_sum_norm = normalization_list(shap_sum, 1, -1)
+                all_shap_sum.append(shap_sum_norm)
             map_data[label] = all_shap_sum
-        with open(PATH + f'data/shap_sum/{model_name}_{data_name}.json', 'w') as f:
+        with open(PATH + f'data/shap_sum2/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
         print(f"comp create shap_sum dict! {model_name}_{data_name}")

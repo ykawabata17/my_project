@@ -54,7 +54,7 @@ class SupervisedUMAP:
         mapper.fit(self.X)
         embedding = mapper.transform(self.X)
         score = self.scorer(scipy.stats.zscore(embedding), self.Y)
-        
+
         if self.best_score > score:
             self.best_score = score
             self.best_model = mapper
@@ -62,30 +62,33 @@ class SupervisedUMAP:
             print(self.best_model)
             title = 'trial={0}, score={1:.3e}'.format(trial.number, score)
             title += f'\nn_neighbors={n_neighbors}, min_dist={min_dist}, metric={metric}'
-            
+
             plt.figure()
             plt.title(title)
             for n in np.unique(self.Y):
-                plt.scatter(embedding[:, 0][self.Y == n], embedding[:, 1][self.Y == n], label=n)
+                plt.scatter(embedding[:, 0][self.Y == n],
+                            embedding[:, 1][self.Y == n], label=n)
             plt.grid()
             plt.legend()
-            plt.savefig(PATH + f'plot/study_history_sum/{self.folder_name}/{trial.number}.png')
+            plt.savefig(
+                PATH + f'plot/study_history2/{self.folder_name}/{trial.number}.png')
         return score
 
 
 def main():
-    map_datas = glob.glob(PATH + 'data/shap_sum/*.json')
+    map_datas = glob.glob(PATH + 'data/shap_all/org_shap_mis.json')
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
         with open(map_data, 'r') as f:
             decode_data = json.load(f)
         dataX, dataY = data_set(decode_data)
         print("データ読み込み完了")
-        objective = SupervisedUMAP(dataX, dataY, classification_scorer, file_name)
+        objective = SupervisedUMAP(
+            dataX, dataY, classification_scorer, file_name)
         study = optuna.create_study(direction="minimize")
-        print("学習開始")        
+        print("学習開始")
         study.optimize(objective, n_trials=100)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     main()

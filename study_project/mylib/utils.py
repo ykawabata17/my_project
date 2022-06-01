@@ -31,6 +31,7 @@ def data_set(map_data):
     dataY = dataY[random]
     return dataX, dataY
 
+
 def data_set_to_dict(dataX, dataY):
     data_dict = {}
     for i in range(len(dataX)):
@@ -98,6 +99,7 @@ def map_separate_plot(map_datas):
         plt.legend()
         plt.savefig(PATH + f'plot/{filename}.png')
 
+
 def map_plot(map_datas):
     """
     すべての画像のデータを次元削減し、2次元のマップを作成する関数
@@ -117,6 +119,7 @@ def map_plot(map_datas):
         plt.legend()
         plt.savefig(PATH + f'plot/{filename}_all.png')
         print(f"comp savefiig! {filename}")
+
 
 def model_data_load(model_name, data_name):
     """
@@ -145,5 +148,7 @@ def model_data_load(model_name, data_name):
         dataX, dataY = data_loader.load_test_random(shuffle=False)
     elif data_name == 'test':
         dataX, dataY = data_loader.load_test_data(shuffle=False)
+    elif data_name == 'shap_mis':
+        dataX, dataY = data_loader.load_train_shap_mis(shuffle=False)
 
     return model, dataX, dataY

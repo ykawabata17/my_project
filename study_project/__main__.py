@@ -1,5 +1,3 @@
-import numpy as np
-
 from mylib.calc_shap import ShapCreate
 from mylib.utils import get_home_path
 
