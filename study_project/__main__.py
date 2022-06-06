@@ -6,7 +6,7 @@ PATH = get_home_path()
 
 
 def main():
-    models = ['org', 'prop', 'at', 'hybrid']
+    models = ['org', 'at', 'prop', 'hybrid']
     datas = ['shap']
     for model in models:
         for data in datas:

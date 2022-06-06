@@ -148,9 +148,10 @@ class ShapCreate(object):
                 shap_values = shap_info['shap_values'].reshape(10, 784)
                 # 10*784のshap値を足し合わせて1*784にして、list型に変換
                 shap_sum = list(map(sum, zip(*shap_values)))
-                shap_sum_norm = normalization_list(shap_sum, 1, -1)
+                for data in shap_sum:
+                    shap_sum_norm = normalization_list(shap_sum, 1, -1)
                 all_shap_sum.append(shap_sum_norm)
             map_data[label] = all_shap_sum
-        with open(PATH + f'data/shap_sum2/{model_name}_{data_name}.json', 'w') as f:
+        with open(PATH + f'data/shap_sum_norm/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
         print(f"comp create shap_sum dict! {model_name}_{data_name}")

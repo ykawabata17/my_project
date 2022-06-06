@@ -128,7 +128,7 @@ def model_data_load(model_name, data_name):
     """
     # モデルの読み込み
     if model_name == 'org':
-        model = load_model(PATH + 'models/org/org20000.h5')
+        model = load_model(PATH + 'models/org_org/org20000.h5')
     elif model_name == 'prop':
         model = load_model(PATH + 'models/org_shap/org10000_shap10000.h5')
     elif model_name == 'at':
