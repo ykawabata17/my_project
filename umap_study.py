@@ -44,7 +44,9 @@ class SupervisedUMAP:
     def __call__(self, trial):
         n_neighbors = trial.suggest_int("n_neighbors", 2, 100)
         min_dist = trial.suggest_uniform("min_dist", 0.0, 0.99)
-        metric = trial.suggest_categorical("metric", ["canberra"])
+        metric = trial.suggest_categorical("metric", 
+                                           ["euclidean", "manhattan", "chebyshev", "minkowski", "canberra", 
+               "braycurtis", "mahalanobis", "cosine", "correlation"])
         # para_history = {}
         mapper = umap.UMAP(
             n_neighbors=n_neighbors,
@@ -82,6 +84,7 @@ def main():
         with open(map_data, 'r') as f:
             decode_data = json.load(f)
         dataX, dataY = data_set(decode_data)
+        print(dataX.shape)
         print("データ読み込み完了")
         objective = SupervisedUMAP(
             dataX, dataY, classification_scorer, file_name)

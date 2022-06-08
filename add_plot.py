@@ -1,4 +1,3 @@
-from ast import Load
 import glob
 import json
 import os
@@ -33,26 +32,31 @@ def add_plot_to_map(dataX, dataY, add_file, model, parameter):
             dataX.append(shap_sum_norm)
             label = int([np.where(y[i] == 1.0)][0][0][0])
             dataY = dataY.tolist()
-            dataY.append(f'{label}_add')
+            dataY.append('add')
             dataX = np.array(dataX)
             dataY = np.array(dataY)
-    else:
-        # add_fileの画像からshapだす
-        img = cv2.imread(add_file, cv2.IMREAD_GRAYSCALE)
-        label = re.sub(r"\D", "", add_file)[0]
-        img = np.array(img).astype('float32') / 255
-        img = img.reshape(1, 28, 28, 1)
-        label = np.array(label)
-        shap_create = ShapCreate(model)
-        shap_info = shap_create.shap_calc(img)
-        shap_sum = shap_info['shap_sum']
-        add_data_shap = normalization_list(shap_sum, 1, 0)
-        dataX = dataX.tolist()
-        dataX.append(add_data_shap)
-        dataY = dataY.tolist()
-        dataY.append('add_data')
-        dataX = np.array(dataX)
-        dataY = np.array(dataY)
+    random = np.arange(len(dataX))
+    np.random.shuffle(random)
+    dataX = dataX[random]
+    dataY = dataY[random]
+
+    # else:
+    #     # add_fileの画像からshapだす
+    #     img = cv2.imread(add_file, cv2.IMREAD_GRAYSCALE)
+    #     label = re.sub(r"\D", "", add_file)[0]
+    #     img = np.array(img).astype('float32') / 255
+    #     img = img.reshape(1, 28, 28, 1)
+    #     label = np.array(label)
+    #     shap_create = ShapCreate(model)
+    #     shap_info = shap_create.shap_calc(img)
+    #     shap_sum = shap_info['shap_sum']
+    #     add_data_shap = normalization_list(shap_sum, 1, 0)
+    #     dataX = dataX.tolist()
+    #     dataX.append(add_data_shap)
+    #     dataY = dataY.tolist()
+    #     dataY.append('add_data')
+    #     dataX = np.array(dataX)
+    #     dataY = np.array(dataY)
 
     # 追加データも加えてマップ作成
     mapper = umap.UMAP(n_components=2,
@@ -75,7 +79,7 @@ def add_plot_to_map(dataX, dataY, add_file, model, parameter):
 
 
 def main(**kwargs):
-    map_datas = glob.glob(PATH + 'data/shap_all/org_org.json')
+    map_datas = glob.glob(PATH + 'data/shap_all/prop_shap.json')
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
         print(file_name)
@@ -86,7 +90,7 @@ def main(**kwargs):
         elif file_name == 'org_shap':
             parameter = {'n_neighbors': 4,
                          'min_dist': 0.927820, 'metric': 'canberra'}
-            model = load_model(PATH + 'models/org/org20000.h5')
+            model = load_model(PATH + 'models/org_org/org20000.h5')
         elif file_name == 'hybrid_shap':
             parameter = {'n_neighbors': 10,
                          'min_dist': 0.782874, 'metric': 'canberra'}

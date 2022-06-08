@@ -149,7 +149,7 @@ class ShapCreate(object):
                 # 10*784のshap値を足し合わせて1*784にして、list型に変換
                 shap_sum = list(map(sum, zip(*shap_values)))
                 for data in shap_sum:
-                    shap_sum_norm = normalization_list(shap_sum, 1, -1)
+                    shap_sum_norm = normalization_list(shap_sum, 100, 0)
                 all_shap_sum.append(shap_sum_norm)
             map_data[label] = all_shap_sum
         with open(PATH + f'data/shap_sum_norm/{model_name}_{data_name}.json', 'w') as f:
