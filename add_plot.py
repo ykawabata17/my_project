@@ -21,7 +21,8 @@ def add_plot_to_map(dataX, dataY, add_file, model, parameter):
     if add_file == 'shap':
         data_loader = LoadData()
         x, y = data_loader.load_test_shap(shuffle=True)
-        x, y = x[:100], y[:100]
+        print(y)
+        x, y = x[:500], y[:500]
         shap_create = ShapCreate(model)
         for i in range(len(x)):
             img = x[i].reshape(1, 28, 28, 1)
@@ -79,7 +80,7 @@ def add_plot_to_map(dataX, dataY, add_file, model, parameter):
 
 
 def main(**kwargs):
-    map_datas = glob.glob(PATH + 'data/shap_all/prop_shap.json')
+    map_datas = glob.glob(PATH + 'data/shap_all_2/prop_shap.json')
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
         print(file_name)

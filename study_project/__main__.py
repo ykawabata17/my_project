@@ -6,12 +6,12 @@ PATH = get_home_path()
 
 
 def main():
-    models = ['org', 'at', 'prop', 'hybrid']
-    datas = ['shap']
+    models = ['org']
+    datas = ['shap_mis']
     for model in models:
         for data in datas:
-            # ShapCreate.create_heatmap(model, data)
-            ShapCreate.heatmap_to_umap(model, data)
+            ShapCreate.create_heatmap(model, data)
+            # ShapCreate.heatmap_to_umap(model, data)
 
 
 if __name__ == '__main__':
