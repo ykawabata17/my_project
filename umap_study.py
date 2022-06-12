@@ -73,12 +73,12 @@ class SupervisedUMAP:
             plt.grid()
             plt.legend()
             plt.savefig(
-                PATH + f'plot/study_history_sum_norm/{self.folder_name}/{trial.number}.png')
+                PATH + f'plot/study_history/{self.folder_name}/{trial.number}.png')
         return score
 
 
 def main():
-    map_datas = glob.glob(PATH + 'data/shap_sum_norm/*.json')
+    map_datas = glob.glob(PATH + 'data/shap_all_2/org_shap_mis.json')
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
         with open(map_data, 'r') as f:
