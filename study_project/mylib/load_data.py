@@ -31,9 +31,10 @@ class LoadData(object):
         self._file_path = PATH + 'images'
 
     @staticmethod
-    def load_train_org():
+    def load_train_org(shuffle=True):
         (trainX_org, trainY_org), _ = mnist.load_data()
-        trainX_org, trainY_org = LoadData._data_edit(trainX_org, trainY_org)
+        trainX_org, trainY_org = LoadData._data_edit(
+            trainX_org, trainY_org, shuffle)
         return trainX_org, trainY_org
 
     @staticmethod
@@ -42,7 +43,7 @@ class LoadData(object):
         testX_org, testY_org = LoadData._data_edit(
             testX_org, testY_org, shuffle)
         testY_org = to_categorical(testY_org)
-        return testX_org, testY_org
+        return testX_org[:3000], testY_org[:3000]
 
     def load_train_shap(self):
         trainX_shap, trainY_shap = load_img('ae_train')

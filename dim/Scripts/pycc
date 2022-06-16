@@ -1,3 +1,0 @@
-#!c:\users\kawabata\dev\my_project\dim\scripts\python.exe
-from numba.pycc import main
-main()

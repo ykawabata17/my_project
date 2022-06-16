@@ -23,8 +23,7 @@ class ShapCreate(object):
         trainX = trainX.astype('float32') / 255
         self.trainX = trainX
         self.model = model
-        background = self.trainX[np.random.choice(
-            self.trainX.shape[0], 100, replace=False)]
+        background = self.trainX[:100]
         self.e = shap.DeepExplainer(self.model, background)
 
     def shap_calc(self, img):
@@ -124,7 +123,7 @@ class ShapCreate(object):
             print(label)
         for index, data in enumerate(dataX):
             map_data[index] = data
-        with open(PATH + f'data/shap_all_2/{model_name}_{data_name}.json', 'w') as f:
+        with open(PATH + f'data/shap_all_norm/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
         print(f"comp create all_shap dict! {model_name}_{data_name}")
 

@@ -7,113 +7,81 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 import umap.umap_ as umap
+import umap.plot
+import optuna
 from tensorflow.keras.models import load_model
 
 from study_project.mylib.load_data import LoadData
 from study_project.mylib.calc_shap import ShapCreate
 from study_project.mylib.utils import normalization_list, get_home_path, data_set
+from study_project.mylib.utils import SupervisedUMAP, classification_scorer
 
 
 PATH = get_home_path()
 
 
-def add_plot_to_map(dataX, dataY, add_file, model, parameter):
-    if add_file == 'shap':
-        data_loader = LoadData()
-        x, y = data_loader.load_test_shap(shuffle=True)
-        print(y)
-        x, y = x[:500], y[:500]
-        shap_create = ShapCreate(model)
-        for i in range(len(x)):
-            img = x[i].reshape(1, 28, 28, 1)
-            shap_info = shap_create.shap_calc(img)
-            shap_sum = shap_info['shap_sum']
-            shap_sum_norm = normalization_list(shap_sum, 1, 0)
-            dataX = dataX.tolist()
-            dataX.append(shap_sum_norm)
-            label = int([np.where(y[i] == 1.0)][0][0][0])
-            dataY = dataY.tolist()
-            dataY.append('add')
-            dataX = np.array(dataX)
-            dataY = np.array(dataY)
+def add_data(dataX, dataY, add_data):
+    add_data = add_data
+    model = load_model(PATH + 'models/org_org/org20000.h5')
+    shap_creater = ShapCreate(model)
+    data_loader = LoadData()
+    if add_data == 'shap':
+        addX, addY = data_loader.load_test_shap(shuffle=True)
+    elif add_data == 'ae':
+        addX, addY = data_loader.load_test_ae(shuffle=True)
+    elif add_data == 'org':
+        addX, addY = data_loader.load_test_org(shuffle=True)
+    elif add_data == 'random':
+        addX, addY = data_loader.load_test_random(shuffle=True)
+    else:
+        # 写真単体の時の処理を書く
+        pass
+    addX = addX[:300]
+    addY = addY[:300]
+    for i in range(len(addX)):
+        img = addX[i].reshape(1, 28, 28, 1)
+        shap_sum = shap_creater.shap_calc(img)['shap_sum']
+        shap_sum_norm = normalization_list(shap_sum, 1, 0)
+        dataX.append(shap_sum_norm)
+        label = int([np.where(addY[i] == 1.0)][0][0][0])
+        dataY.append(f'add_{label}')
+    dataX, dataY = np.array(dataX), np.array(dataY)
     random = np.arange(len(dataX))
     np.random.shuffle(random)
-    dataX = dataX[random]
-    dataY = dataY[random]
+    dataX, dataY = dataX[random], dataY[random]
 
-    # else:
-    #     # add_fileの画像からshapだす
-    #     img = cv2.imread(add_file, cv2.IMREAD_GRAYSCALE)
-    #     label = re.sub(r"\D", "", add_file)[0]
-    #     img = np.array(img).astype('float32') / 255
-    #     img = img.reshape(1, 28, 28, 1)
-    #     label = np.array(label)
-    #     shap_create = ShapCreate(model)
-    #     shap_info = shap_create.shap_calc(img)
-    #     shap_sum = shap_info['shap_sum']
-    #     add_data_shap = normalization_list(shap_sum, 1, 0)
-    #     dataX = dataX.tolist()
-    #     dataX.append(add_data_shap)
-    #     dataY = dataY.tolist()
-    #     dataY.append('add_data')
-    #     dataX = np.array(dataX)
-    #     dataY = np.array(dataY)
+    print('削減開始')
 
-    # 追加データも加えてマップ作成
-    mapper = umap.UMAP(n_components=2,
-                       n_neighbors=parameter['n_neighbors'],
-                       metric=parameter['metric'],
-                       min_dist=parameter['min_dist'])
-    embedding = mapper.fit_transform(dataX)
-    x = embedding[:, 0]
-    y = embedding[:, 1]
-    plt.figure()
-    for n in np.unique(dataY):
-        if 'add' in n:
-            plt.scatter(x[dataY == n], y[dataY == n],
-                        label=n, color='k', marker='D')
-        else:
-            plt.scatter(x[dataY == n], y[dataY == n], label=n)
-    plt.grid()
-    plt.legend()
-    plt.show()
+    objective = SupervisedUMAP(
+        dataX, dataY, classification_scorer, 'add_data')
+    study = optuna.create_study(direction="minimize")
+    print("学習開始")
+    study.optimize(objective, n_trials=100)
+
+    # mapper = umap.UMAP(n_components=2, n_neighbors=17,
+    #                    min_dist=0.5, metric='canberra')
+    # embedding = mapper.fit_transform(dataX)
+    # x = embedding[:, 0]
+    # y = embedding[:, 1]
+    # plt.figure()
+    # for n in np.unique(dataY):
+    #     if 'add' in n:
+    #         plt.scatter(x[dataY == n], y[dataY == n], label=n, marker='*')
+    #     else:
+    #         plt.scatter(x[dataY == n], y[dataY == n], label=n)
+    # plt.grid()
+    # plt.legend()
+    # plt.show()
 
 
-def main(**kwargs):
-    map_datas = glob.glob(PATH + 'data/shap_all_2/prop_shap.json')
-    for map_data in map_datas:
-        file_name = os.path.splitext(os.path.basename(map_data))[0]
-        print(file_name)
-        if file_name == 'at_shap':
-            parameter = {'n_neighbors': 6,
-                         'min_dist': 0.768167, 'metric': 'canberra'}
-            model = load_model(PATH + 'models/org_ae/org10000_ae10000.h5')
-        elif file_name == 'org_shap':
-            parameter = {'n_neighbors': 4,
-                         'min_dist': 0.927820, 'metric': 'canberra'}
-            model = load_model(PATH + 'models/org_org/org20000.h5')
-        elif file_name == 'hybrid_shap':
-            parameter = {'n_neighbors': 10,
-                         'min_dist': 0.782874, 'metric': 'canberra'}
-            model = load_model(
-                PATH + 'models/org_shap_ae/org10000_shap5000_ae5000.h5')
-        elif file_name == 'prop_shap':
-            parameter = {'n_neighbors': 10,
-                         'min_dist': 0.934518, 'metric': 'canberra'}
-            model = load_model(PATH + 'models/org_shap/org10000_shap10000.h5')
-        elif file_name == 'org_org':
-            parameter = {'n_neighbors': 17,
-                         'min_dist': 0.500905, 'metric': 'canberra'}
-            model = load_model(PATH + 'models/org_org/org20000.h5')
-        with open(map_data, 'r') as f:
-            decode_data = json.load(f)
-        dataX, dataY = data_set(decode_data)
-        img_name = kwargs['file_name']
-        add_plot_to_map(dataX, dataY, img_name, model, parameter)
+def main():
+    map_data = glob.glob(PATH + 'data/shap_all_norm/org_org.json')
+    print(map_data)
+    with open(map_data[0], 'r') as f:
+        decode_data = json.load(f)
+    dataX, dataY = data_set(decode_data)
+    add_data(dataX, dataY, 'shap')
 
 
-if __name__ == "__main__":
-    import sys
-    args = sys.argv
-    add_file = args[1]
-    main(file_name=add_file)
+if __name__ == '__main__':
+    main()

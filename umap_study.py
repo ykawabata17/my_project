@@ -33,20 +33,20 @@ def classification_scorer(X, Y, alpha=1e-3):
 
 
 class SupervisedUMAP:
-    def __init__(self, X, Y, scorer, file_name):
+    def __init__(self, X, Y, scorer, folder_name):
         self.X = X
         self.Y = Y
         self.scorer = scorer
         self.best_score = 1e53
         self.best_model = None
-        self.folder_name = file_name
+        self.folder_name = folder_name
 
     def __call__(self, trial):
         n_neighbors = trial.suggest_int("n_neighbors", 2, 100)
         min_dist = trial.suggest_uniform("min_dist", 0.0, 0.99)
-        metric = trial.suggest_categorical("metric", 
-                                           ["euclidean", "manhattan", "chebyshev", "minkowski", "canberra", 
-               "braycurtis", "mahalanobis", "cosine", "correlation"])
+        metric = trial.suggest_categorical("metric",
+                                           ["euclidean", "manhattan", "chebyshev", "minkowski", "canberra",
+                                            "braycurtis", "mahalanobis", "cosine", "correlation"])
         # para_history = {}
         mapper = umap.UMAP(
             n_neighbors=n_neighbors,
@@ -78,13 +78,12 @@ class SupervisedUMAP:
 
 
 def main():
-    map_datas = glob.glob(PATH + 'data/shap_all_2/org_shap_mis.json')
+    map_datas = glob.glob(PATH + 'data/shap_all/org_org.json')
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
         with open(map_data, 'r') as f:
             decode_data = json.load(f)
         dataX, dataY = data_set(decode_data)
-        print(dataX.shape)
         print("データ読み込み完了")
         objective = SupervisedUMAP(
             dataX, dataY, classification_scorer, file_name)
