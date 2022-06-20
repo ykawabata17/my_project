@@ -35,7 +35,7 @@ class LoadData(object):
         (trainX_org, trainY_org), _ = mnist.load_data()
         trainX_org, trainY_org = LoadData._data_edit(
             trainX_org, trainY_org, shuffle)
-        return trainX_org, trainY_org
+        return trainX_org[:10000], trainY_org[:10000]
 
     @staticmethod
     def load_test_org(shuffle=True):
