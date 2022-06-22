@@ -187,8 +187,7 @@ class SupervisedUMAP:
         n_neighbors = trial.suggest_int("n_neighbors", 2, 100)
         min_dist = trial.suggest_uniform("min_dist", 0.0, 0.99)
         metric = trial.suggest_categorical("metric",
-                                           ["euclidean", "manhattan", "chebyshev", "minkowski", "canberra",
-                                            "braycurtis", "mahalanobis", "cosine", "correlation"])
+                                           ["euclidean", "manhattan", "chebyshev", "minkowski"])
         # para_history = {}
         mapper = umap.UMAP(
             n_neighbors=n_neighbors,
@@ -210,8 +209,16 @@ class SupervisedUMAP:
             plt.figure()
             plt.title(title)
             for n in np.unique(self.Y):
-                plt.scatter(embedding[:, 0][self.Y == n],
-                            embedding[:, 1][self.Y == n], label=n)
+                if 'shap' in n:
+                    plt.scatter(embedding[:, 0][self.Y == n], 
+                                embedding[:, 1][self.Y == n], 
+                                label=n, marker='*', color='#000000')
+                else:
+                    plt.scatter(embedding[:, 0][self.Y == n], 
+                                embedding[:, 1][self.Y == n], 
+                                label=n)
+                # plt.scatter(embedding[:, 0][self.Y == n],
+                #             embedding[:, 1][self.Y == n], label=n)
             plt.grid()
             plt.legend()
             plt.savefig(

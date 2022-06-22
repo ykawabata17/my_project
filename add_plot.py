@@ -2,12 +2,12 @@ import glob
 import json
 import os
 import re
+from turtle import color
 
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 import umap.umap_ as umap
-import umap.plot
 import optuna
 from tensorflow.keras.models import load_model
 
@@ -21,12 +21,11 @@ PATH = get_home_path()
 
 
 def add_data(dataX, dataY, add_data):
-    add_data = add_data
     model = load_model(PATH + 'models/org_org/org20000.h5')
     shap_creater = ShapCreate(model)
     data_loader = LoadData()
     if add_data == 'shap':
-        addX, addY = data_loader.load_test_shap(shuffle=True)
+        addX, addY = data_loader.load_test_shap(shuffle=False)
     elif add_data == 'ae':
         addX, addY = data_loader.load_test_ae(shuffle=True)
     elif add_data == 'org':
@@ -36,42 +35,27 @@ def add_data(dataX, dataY, add_data):
     else:
         # 写真単体の時の処理を書く
         pass
-    addX = addX[:300]
-    addY = addY[:300]
-    for i in range(len(addX)):
-        img = addX[i].reshape(1, 28, 28, 1)
-        shap_sum = shap_creater.shap_calc(img)['shap_sum']
-        shap_sum_norm = normalization_list(shap_sum, 1, 0)
-        dataX.append(shap_sum_norm)
-        label = int([np.where(addY[i] == 1.0)][0][0][0])
-        dataY.append(f'add_{label}')
-    dataX, dataY = np.array(dataX), np.array(dataY)
-    random = np.arange(len(dataX))
-    np.random.shuffle(random)
-    dataX, dataY = dataX[random], dataY[random]
-
-    print('削減開始')
-
-    objective = SupervisedUMAP(
-        dataX, dataY, classification_scorer, 'add_data')
-    study = optuna.create_study(direction="minimize")
-    print("学習開始")
-    study.optimize(objective, n_trials=100)
-
-    # mapper = umap.UMAP(n_components=2, n_neighbors=17,
-    #                    min_dist=0.5, metric='canberra')
-    # embedding = mapper.fit_transform(dataX)
-    # x = embedding[:, 0]
-    # y = embedding[:, 1]
-    # plt.figure()
-    # for n in np.unique(dataY):
-    #     if 'add' in n:
-    #         plt.scatter(x[dataY == n], y[dataY == n], label=n, marker='*')
-    #     else:
-    #         plt.scatter(x[dataY == n], y[dataY == n], label=n)
-    # plt.grid()
-    # plt.legend()
-    # plt.show()
+    
+    for add_label in range(0, 10):
+        for i in range(len(addX)):
+            label = int([np.where(addY[i] == 1.0)][0][0][0])
+            if add_label == label:
+                dataY.append(f'{label}_shap')
+                img = addX[i].reshape(1, 28, 28, 1)
+                shap_sum = shap_creater.shap_calc(img)['shap_sum']
+                shap_sum_norm = normalization_list(shap_sum, 1, 0)
+                dataX.append(shap_sum_norm)
+        dataX, dataY = np.array(dataX), np.array(dataY)
+        random = np.arange(len(dataX))
+        np.random.shuffle(random)
+        dataX, dataY = dataX[random], dataY[random]
+        
+        print('削減開始')
+        objective = SupervisedUMAP(
+            dataX, dataY, classification_scorer, f'add_data_{add_label}')
+        study = optuna.create_study(direction="minimize")
+        print("学習開始")
+        study.optimize(objective, n_trials=100)
 
 
 def main():
