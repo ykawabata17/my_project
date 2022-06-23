@@ -10,7 +10,7 @@ def main():
     datas = ['org']
     for model in models:
         for data in datas:
-            ShapCreate.create_heatmap(model, data)
+            ShapCreate.heatmap_to_umap(model, data)
 
 
 if __name__ == '__main__':

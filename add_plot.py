@@ -1,14 +1,10 @@
+import copy
 import glob
 import json
-import os
-import re
-from turtle import color
 
-import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 import umap.umap_ as umap
-import optuna
 from tensorflow.keras.models import load_model
 
 from study_project.mylib.load_data import LoadData
@@ -20,7 +16,7 @@ from study_project.mylib.utils import SupervisedUMAP, classification_scorer
 PATH = get_home_path()
 
 
-def add_data(dataX, dataY, add_data):
+def add_data(X, Y, add_data):
     model = load_model(PATH + 'models/org_org/org20000.h5')
     shap_creater = ShapCreate(model)
     data_loader = LoadData()
@@ -35,12 +31,14 @@ def add_data(dataX, dataY, add_data):
     else:
         # 写真単体の時の処理を書く
         pass
-    
+
     for add_label in range(0, 10):
+        dataX = copy.deepcopy(X)
+        dataY = copy.deepcopy(Y)
         for i in range(len(addX)):
             label = int([np.where(addY[i] == 1.0)][0][0][0])
             if add_label == label:
-                dataY.append(f'{label}_shap')
+                dataY.append(str(label)+'_shap')
                 img = addX[i].reshape(1, 28, 28, 1)
                 shap_sum = shap_creater.shap_calc(img)['shap_sum']
                 shap_sum_norm = normalization_list(shap_sum, 1, 0)
@@ -49,13 +47,36 @@ def add_data(dataX, dataY, add_data):
         random = np.arange(len(dataX))
         np.random.shuffle(random)
         dataX, dataY = dataX[random], dataY[random]
-        
+
         print('削減開始')
-        objective = SupervisedUMAP(
-            dataX, dataY, classification_scorer, f'add_data_{add_label}')
-        study = optuna.create_study(direction="minimize")
-        print("学習開始")
-        study.optimize(objective, n_trials=100)
+        mapper = umap.UMAP(
+            n_neighbors=4,
+            min_dist=0.96074,
+            metric='minkowski'
+        )
+        mapper.fit(dataX)
+        embedding = mapper.transform(dataX)
+        x = embedding[:, 0]
+        y = embedding[:, 1]
+        plt.figure()
+        for n in np.unique(dataY):
+            if 'shap' not in n:
+                plt.scatter(x[dataY == n], y[dataY == n],
+                            label=n, zorder=1)
+            else:
+                plt.scatter(x[dataY == n], y[dataY == n],
+                            label=n, marker='*', color='#000000', zorder=2)
+        plt.grid()
+        plt.legend()
+        plt.savefig(
+            PATH + 'plot/study_history/add_data/{}.png'.format(str(add_label)))
+        print(add_label)
+
+        # objective = SupervisedUMAP(
+        #     dataX, dataY, classification_scorer, f'add_data_{add_label}')
+        # study = optuna.create_study(direction="minimize")
+        # print("学習開始")
+        # study.optimize(objective, n_trials=100)
 
 
 def main():

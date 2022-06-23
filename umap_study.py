@@ -40,6 +40,7 @@ class SupervisedUMAP:
         self.best_score = 1e53
         self.best_model = None
         self.folder_name = folder_name
+        self.best_embedding = None
 
     def __call__(self, trial):
         n_neighbors = trial.suggest_int("n_neighbors", 2, 100)
@@ -55,6 +56,7 @@ class SupervisedUMAP:
         )
         mapper.fit(self.X)
         embedding = mapper.transform(self.X)
+        print(embedding)
         score = self.scorer(scipy.stats.zscore(embedding), self.Y)
 
         if self.best_score > score:
@@ -78,7 +80,7 @@ class SupervisedUMAP:
 
 
 def main():
-    map_datas = glob.glob(PATH + 'data/shap_all/org_org.json')
+    map_datas = glob.glob(PATH + 'data/shap_all_norm/org_org.json')
     for map_data in map_datas:
         file_name = os.path.splitext(os.path.basename(map_data))[0]
         with open(map_data, 'r') as f:
