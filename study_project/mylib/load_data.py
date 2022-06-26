@@ -15,7 +15,7 @@ def load_img(folder_name, shuffle=True):
     dataX, dataY = [], []
     for i in range(10):
         files = glob.glob(PATH + f'images/{folder_name}/{i}/*.jpg')
-        files = files[:300]
+        files = files
         for file in files:
             img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
             dataX.append(img)

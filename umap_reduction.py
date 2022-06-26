@@ -6,11 +6,45 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 from umap.parametric_umap import ParametricUMAP
+from umap.parametric_umap import load_ParametricUMAP
+from tensorflow.keras.models import load_model
 
+from study_project.mylib.load_data import LoadData
+from study_project.mylib.calc_shap import ShapCreate
 from study_project.mylib.utils import get_home_path, data_set
 
 PATH = get_home_path()
 
+def add_data(add_data):
+    model = load_model(PATH + 'models/org_org/org20000.h5')
+    add_dataY = []
+    add_dataX = []
+    shap_creater = ShapCreate(model)
+    data_loader = LoadData()
+    if add_data == 'shap':
+        addX, addY = data_loader.load_test_shap(shuffle=False)
+    elif add_data == 'ae':
+        addX, addY = data_loader.load_test_ae(shuffle=True)
+    elif add_data == 'org':
+        addX, addY = data_loader.load_test_org(shuffle=True)
+    elif add_data == 'random':
+        addX, addY = data_loader.load_test_random(shuffle=True)
+    else:
+        # 写真単体の時の処理を書く
+        pass
+    for i in range(len(addX)):
+        label = int([np.where(addY[i] == 1.0)][0][0][0])
+        add_dataY.append(str(label)+'_shap')
+        img = addX[i].reshape(1, 28, 28, 1)
+        shap_value = shap_creater.shap_calc(img)['shap_values'].tolist()
+        add_dataX.append(shap_value)
+    add_dataX, add_dataY = np.array(add_dataX), np.array(add_dataY)
+    random = np.arange(len(add_dataX))
+    np.random.shuffle(random)
+    add_dataX, add_dataY = add_dataX[random], add_dataY[random]
+    return add_dataX, add_dataY
+
+# 従来モデル/元画像のshap値を取得
 map_datas = glob.glob(PATH + 'data/shap_all/org_org.json')
 for map_data in map_datas:
     with open(map_data, 'r') as f:
@@ -20,6 +54,10 @@ for map_data in map_datas:
 dataX = np.array(dataX)
 print(dataX.shape)
 dataX = dataX.reshape(3000, 7840)
+
+# 従来モデル/shap画像のshap値を取得
+add_dataX, add_dataY = add_data('shap')
+add_dataX = add_dataX.reshape(len(add_dataX), 7840)
 
 dims = (10, 28, 28)
 n_components = 2
@@ -37,16 +75,23 @@ encoder = tf.keras.Sequential([
     tf.keras.layers.Dense(units=n_components),
 ])
 
-embedder = ParametricUMAP(encoder=encoder, dims=dims)
+embedder = ParametricUMAP()
 embedder.save(PATH + 'data/')
+# embedder = load_ParametricUMAP(PATH + 'data')
 embedding = embedder.fit_transform(dataX)
+additional_embedding = embedder.fit_transform(add_dataX)
 
 x = embedding[:, 0]
 y = embedding[:, 1]
+add_x = additional_embedding[:, 0]
+add_y = additional_embedding[:, 1]
 
 plt.figure()
 for n in np.unique(dataY):
-    plt.scatter(x[dataY == n], y[dataY == n], label=n)
+    plt.scatter(x[dataY == n], y[dataY == n], label=n, zorder=1)
+for n in np.unique(add_dataY):
+    plt.scatter(add_x[add_dataY == n], add_y[add_dataY == n], label=n, 
+                marker='*', zorder=2)
 plt.grid()
 plt.legend()
 plt.show()
