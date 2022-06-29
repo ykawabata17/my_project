@@ -34,10 +34,11 @@ def add_data(add_data):
         pass
     for i in range(len(addX)):
         label = int([np.where(addY[i] == 1.0)][0][0][0])
-        add_dataY.append(str(label)+'_shap')
-        img = addX[i].reshape(1, 28, 28, 1)
-        shap_value = shap_creater.shap_calc(img)['shap_values'].tolist()
-        add_dataX.append(shap_value)
+        if label == 3:   
+            add_dataY.append(str(label)+'_shap')
+            img = addX[i].reshape(1, 28, 28, 1)
+            shap_value = shap_creater.shap_calc(img)['shap_values'].tolist()
+            add_dataX.append(shap_value)
     add_dataX, add_dataY = np.array(add_dataX), np.array(add_dataY)
     random = np.arange(len(add_dataX))
     np.random.shuffle(random)
@@ -53,7 +54,7 @@ for map_data in map_datas:
     print("データ読み込み完了")
 dataX = np.array(dataX)
 print(dataX.shape)
-dataX = dataX.reshape(3000, 7840)
+dataX = dataX.reshape(len(dataX), 7840)
 
 # 従来モデル/shap画像のshap値を取得
 add_dataX, add_dataY = add_data('shap')
@@ -75,7 +76,7 @@ encoder = tf.keras.Sequential([
     tf.keras.layers.Dense(units=n_components),
 ])
 
-embedder = ParametricUMAP()
+embedder = ParametricUMAP(verbose=True)
 embedder.save(PATH + 'data/')
 # embedder = load_ParametricUMAP(PATH + 'data')
 embedding = embedder.fit_transform(dataX)
@@ -96,20 +97,20 @@ plt.grid()
 plt.legend()
 plt.show()
 
-dataY = np.array(dataY)
-fig, ax = plt.subplots(figsize=(8, 8))
-sc = ax.scatter(
-    embedding[:, 0],
-    embedding[:, 1],
-    c=dataY.astype(int),
-    cmap="tab10",
-    s=0.1,
-    alpha=0.5,
-    rasterized=True,
-)
-ax.axis('equal')
-ax.set_title("Parametric UMAP embedding", fontsize=20)
-plt.colorbar(sc, ax=ax)
-plt.show()
+# dataY = np.array(dataY)
+# fig, ax = plt.subplots(figsize=(8, 8))
+# sc = ax.scatter(
+#     embedding[:, 0],
+#     embedding[:, 1],
+#     c=dataY.astype(int),
+#     cmap="tab10",
+#     s=0.1,
+#     alpha=0.5,
+#     rasterized=True,
+# )
+# ax.axis('equal')
+# ax.set_title("Parametric UMAP embedding", fontsize=20)
+# plt.colorbar(sc, ax=ax)
+# plt.show()
 
 
