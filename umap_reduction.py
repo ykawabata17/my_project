@@ -34,11 +34,13 @@ def add_data(add_data):
         pass
     for i in range(len(addX)):
         label = int([np.where(addY[i] == 1.0)][0][0][0])
-        if label == 3:   
+        if label == 0:   
             add_dataY.append(str(label)+'_shap')
             img = addX[i].reshape(1, 28, 28, 1)
-            shap_value = shap_creater.shap_calc(img)['shap_values'].tolist()
-            add_dataX.append(shap_value)
+            # shap_value = shap_creater.shap_calc(img)['shap_values'].tolist()
+            # add_dataX.append(shap_value)
+            shap_sum = shap_creater.shap_calc(img)['shap_sum']
+            add_dataX.append(shap_sum)
     add_dataX, add_dataY = np.array(add_dataX), np.array(add_dataY)
     random = np.arange(len(add_dataX))
     np.random.shuffle(random)
@@ -46,7 +48,7 @@ def add_data(add_data):
     return add_dataX, add_dataY
 
 # 従来モデル/元画像のshap値を取得
-map_datas = glob.glob(PATH + 'data/shap_all/org_org.json')
+map_datas = glob.glob(PATH + 'data/shap_all_norm/org_org2.json')
 for map_data in map_datas:
     with open(map_data, 'r') as f:
         decode_data = json.load(f)
@@ -54,11 +56,11 @@ for map_data in map_datas:
     print("データ読み込み完了")
 dataX = np.array(dataX)
 print(dataX.shape)
-dataX = dataX.reshape(len(dataX), 7840)
+dataX = dataX.reshape(len(dataX), 10)
 
 # 従来モデル/shap画像のshap値を取得
 add_dataX, add_dataY = add_data('shap')
-add_dataX = add_dataX.reshape(len(add_dataX), 7840)
+add_dataX = add_dataX.reshape(len(add_dataX), 10)
 
 dims = (10, 28, 28)
 n_components = 2

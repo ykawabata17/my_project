@@ -23,13 +23,15 @@ class ShapCreate(object):
         trainX = trainX.astype('float32') / 255
         self.trainX = trainX
         self.model = model
-        background = self.trainX[:100]
-        self.e = shap.DeepExplainer(self.model, background)
+        # background = self.trainX[:100]
+        # background = trainX[np.random.choice(trainX.shape[0], 100, replace=False)]
+        # self.e = shap.DeepExplainer(self.model, background)
 
     def shap_calc(self, img):
-        shap_values = self.e.shap_values(img, check_additivity=False)
+        background = self.trainX[np.random.choice(self.trainX.shape[0], 100, replace=False)]
+        e = shap.DeepExplainer(self.model, background)
+        shap_values = e.shap_values(img, check_additivity=False)
         shap_sum = []
-        shap_sum.clear()
         s = np.array(shap_values)
         shap_values = s.reshape(10, 28, 28)
         for i in range(10):
@@ -110,20 +112,21 @@ class ShapCreate(object):
         data_dict = data_set_to_dict(dataX, dataY)
         dataX = []
         map_data = {}
+        shap_create = ShapCreate(model)
         for label, data in data_dict.items():
-            shap_create = ShapCreate(model)
             map_norm_list = []
             for img in tqdm(data):
                 img = img.reshape(1, 28, 28, 1)
                 shap_info = shap_create.shap_calc(img)
                 shap_sum = shap_info['shap_sum']
-                shap_sum_norm = normalization_list(shap_sum, 1, 0)
-                map_norm_list.append(shap_sum_norm)
+                map_norm_list.append(shap_sum)
+                # shap_sum_norm = normalization_list(shap_sum, 1, 0)
+                # map_norm_list.append(shap_sum_norm)
             dataX.append(map_norm_list)
             print(label)
         for index, data in enumerate(dataX):
             map_data[index] = data
-        with open(PATH + f'data/shap_all_norm/{model_name}_{data_name}.json', 'w') as f:
+        with open(PATH + f'data/shap_all_norm/{model_name}_{data_name}2.json', 'w') as f:
             f.write(json.dumps(map_data))
         print(f"comp create all_shap dict! {model_name}_{data_name}")
 
