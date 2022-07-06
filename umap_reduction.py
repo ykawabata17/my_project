@@ -11,7 +11,7 @@ from tensorflow.keras.models import load_model
 
 from study_project.mylib.load_data import LoadData
 from study_project.mylib.calc_shap import ShapCreate
-from study_project.mylib.utils import get_home_path, data_set
+from study_project.mylib.utils import get_home_path, data_set, normalization_list
 
 PATH = get_home_path()
 
@@ -40,7 +40,8 @@ def add_data(add_data):
             # shap_value = shap_creater.shap_calc(img)['shap_values'].tolist()
             # add_dataX.append(shap_value)
             shap_sum = shap_creater.shap_calc(img)['shap_sum']
-            add_dataX.append(shap_sum)
+            shap_sum_norm = normalization_list(shap_sum, 1, 0)
+            add_dataX.append(shap_sum_norm)
     add_dataX, add_dataY = np.array(add_dataX), np.array(add_dataY)
     random = np.arange(len(add_dataX))
     np.random.shuffle(random)
@@ -48,7 +49,7 @@ def add_data(add_data):
     return add_dataX, add_dataY
 
 # 従来モデル/元画像のshap値を取得
-map_datas = glob.glob(PATH + 'data/shap_all_norm/org_org2.json')
+map_datas = glob.glob(PATH + 'data/shap_all/org_org_norm.json')
 for map_data in map_datas:
     with open(map_data, 'r') as f:
         decode_data = json.load(f)
@@ -78,7 +79,7 @@ encoder = tf.keras.Sequential([
     tf.keras.layers.Dense(units=n_components),
 ])
 
-embedder = ParametricUMAP(verbose=True)
+embedder = ParametricUMAP(verbose=True, autoencoder_loss=True)
 embedder.save(PATH + 'data/')
 # embedder = load_ParametricUMAP(PATH + 'data')
 embedding = embedder.fit_transform(dataX)
