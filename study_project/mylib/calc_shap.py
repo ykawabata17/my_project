@@ -110,24 +110,26 @@ class ShapCreate(object):
         """
         model, dataX, dataY = model_data_load(model_name, data_name)
         data_dict = data_set_to_dict(dataX, dataY)
-        dataX = []
         map_data = {}
+        map_data_norm = {}
         shap_create = ShapCreate(model)
         for label, data in data_dict.items():
+            map_list = []
             map_norm_list = []
             for img in tqdm(data):
                 img = img.reshape(1, 28, 28, 1)
                 shap_info = shap_create.shap_calc(img)
                 shap_sum = shap_info['shap_sum']
-                # map_norm_list.append(shap_sum)
+                map_list.append(shap_sum)
                 shap_sum_norm = normalization_list(shap_sum, 1, 0)
                 map_norm_list.append(shap_sum_norm)
-            dataX.append(map_norm_list)
             print(label)
-        for index, data in enumerate(dataX):
-            map_data[index] = data
-        with open(PATH + f'data/shap_all/{model_name}_{data_name}_norm.json', 'w') as f:
+            map_data[label] = map_list
+            map_data_norm[label] = map_norm_list
+        with open(PATH + f'data/shap_all/{model_name}_{data_name}.json', 'w') as f:
             f.write(json.dumps(map_data))
+        with open(PATH + f'data/shap_all/{model_name}_{data_name}_norm.json', 'w') as f:
+            f.write(json.dumps(map_data_norm))
         print(f"comp create all_shap dict! {model_name}_{data_name}")
 
     @staticmethod
