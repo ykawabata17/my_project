@@ -18,21 +18,25 @@ PATH = get_home_path()
 
 class ShapCreate(object):
     def __init__(self, model):
-        (trainX, _), (testX, _) = mnist.load_data()
+        (trainX, _), _ = mnist.load_data()
         trainX = trainX.reshape((60000, 28, 28, 1))
-        testX = testX.reshape((10000, 28, 28, 1))
         trainX = trainX.astype('float32') / 255
-        testX = testX.astype('float32') / 255
         self.trainX = trainX
         self.model = model
-        self.background = testX
-        # background = trainX[np.random.choice(trainX.shape[0], 100, replace=False)]
-        self.e = shap.DeepExplainer(self.model, self.background)
+        _, testX, testY = model_data_load('org', 'org')
+        self.test_dict = data_set_to_dict(testX, testY)
 
     def shap_calc(self, img):
-        # background = self.trainX[np.random.choice(self.trainX.shape[0], 100, replace=False)]
-        # e = shap.DeepExplainer(self.model, self.background)
-        shap_values = self.e.shap_values(img, check_additivity=False)
+        # 各ラベルから100枚ずつランダムに選んでbackgroundとする
+        background = []
+        for _, v in self.test_dict.items():
+            b = v[np.random.choice(v.shape[0], 100, replace=False)]
+            for x in b:
+                background.append(x)    
+        background = np.array(background)
+        
+        e = shap.DeepExplainer(self.model, background)
+        shap_values = e.shap_values(img, check_additivity=False)
         shap_sum = []
         s = np.array(shap_values)
         shap_values = s.reshape(10, 28, 28)
