@@ -48,7 +48,7 @@ def add_data(add_data):
     return add_dataX, add_dataY
 
 # 従来モデル/元画像のshap値を取得
-map_datas = glob.glob(PATH + 'data/shap_all_norm/org_org2.json')
+map_datas = glob.glob(PATH + 'data/shap_all/org_org_norm.json')
 for map_data in map_datas:
     with open(map_data, 'r') as f:
         decode_data = json.load(f)
@@ -99,20 +99,20 @@ plt.grid()
 plt.legend()
 plt.show()
 
-# dataY = np.array(dataY)
-# fig, ax = plt.subplots(figsize=(8, 8))
-# sc = ax.scatter(
-#     embedding[:, 0],
-#     embedding[:, 1],
-#     c=dataY.astype(int),
-#     cmap="tab10",
-#     s=0.1,
-#     alpha=0.5,
-#     rasterized=True,
-# )
-# ax.axis('equal')
-# ax.set_title("Parametric UMAP embedding", fontsize=20)
-# plt.colorbar(sc, ax=ax)
-# plt.show()
+dataY = np.array(dataY)
+fig, ax = plt.subplots(figsize=(8, 8))
+sc = ax.scatter(
+    embedding[:, 0],
+    embedding[:, 1],
+    c=dataY.astype(int),
+    cmap="tab10",
+    s=0.1,
+    alpha=0.5,
+    rasterized=True,
+)
+ax.axis('equal')
+ax.set_title("Parametric UMAP embedding", fontsize=20)
+plt.colorbar(sc, ax=ax)
+plt.show()
 
 

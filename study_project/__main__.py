@@ -7,7 +7,7 @@ PATH = get_home_path()
 
 def main():
     models = ['org']
-    datas = ['org']
+    datas = ['shap']
     for model in models:
         for data in datas:
             ShapCreate.create_heatmap(model, data)

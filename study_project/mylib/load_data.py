@@ -43,7 +43,7 @@ class LoadData(object):
         testX_org, testY_org = LoadData._data_edit(
             testX_org, testY_org, shuffle)
         testY_org = to_categorical(testY_org)
-        return testX_org[:3000], testY_org[:3000]
+        return testX_org, testY_org
 
     def load_train_shap(self):
         trainX_shap, trainY_shap = load_img('ae_train')
