@@ -18,19 +18,21 @@ PATH = get_home_path()
 
 class ShapCreate(object):
     def __init__(self, model):
-        (trainX, _), _ = mnist.load_data()
+        (trainX, _), (testX, _) = mnist.load_data()
         trainX = trainX.reshape((60000, 28, 28, 1))
+        testX = testX.reshape((10000, 28, 28, 1))
         trainX = trainX.astype('float32') / 255
+        testX = testX.astype('float32') / 255
         self.trainX = trainX
         self.model = model
-        self.background = self.trainX
+        self.background = testX
         # background = trainX[np.random.choice(trainX.shape[0], 100, replace=False)]
-        # self.e = shap.DeepExplainer(self.model, background)
+        self.e = shap.DeepExplainer(self.model, self.background)
 
     def shap_calc(self, img):
         # background = self.trainX[np.random.choice(self.trainX.shape[0], 100, replace=False)]
-        e = shap.DeepExplainer(self.model, self.background)
-        shap_values = e.shap_values(img, check_additivity=False)
+        # e = shap.DeepExplainer(self.model, self.background)
+        shap_values = self.e.shap_values(img, check_additivity=False)
         shap_sum = []
         s = np.array(shap_values)
         shap_values = s.reshape(10, 28, 28)
@@ -47,15 +49,14 @@ class ShapCreate(object):
         }
         return shap_info
 
-    def add_noise(self, eps=0.5):
+    def add_noise(self, images, eps=0.5):
         noise_images = []
-        for img in self.images:
+        for img in images:
             img = img.reshape(1, 28, 28, 1)
             shap_info = self.shap_calc(img)
             index = []
             values = []
-            image = img
-            image = image.reshape(28, 28)
+            image = img.reshape(28, 28)
             base_heat = shap_info['min_shap']
             compare_heat = shap_info['max_shap']
             for i in range(28):
@@ -91,7 +92,7 @@ class ShapCreate(object):
                     image[index[i][0]][index[i][1]] = 1
                 else:
                     image[index[i][0]][index[i][1]] = 0
-                noise_images.append(image)
+            noise_images.append(image)
         return noise_images
 
     def shap_visu(self, file):
