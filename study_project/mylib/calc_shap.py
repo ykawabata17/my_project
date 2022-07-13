@@ -1,9 +1,11 @@
 import json
+from turtle import back
 import matplotlib.pyplot as plt
 import numpy as np
 import random
 import shap
 
+import cv2
 from tensorflow.keras.datasets import mnist
 from tqdm import tqdm
 
@@ -23,20 +25,21 @@ class ShapCreate(object):
         trainX = trainX.astype('float32') / 255
         self.trainX = trainX
         self.model = model
-        _, testX, testY = model_data_load('org', 'org')
+        _, testX, testY = model_data_load('org', 'test_org')
         self.test_dict = data_set_to_dict(testX, testY)
-
-    def shap_calc(self, img):
+        
+    def define_explainer(self):
         # 各ラベルから100枚ずつランダムに選んでbackgroundとする
         background = []
         for _, v in self.test_dict.items():
             b = v[np.random.choice(v.shape[0], 100, replace=False)]
             for x in b:
-                background.append(x)    
+                background.append(x)
         background = np.array(background)
-        
-        e = shap.DeepExplainer(self.model, background)
-        shap_values = e.shap_values(img, check_additivity=False)
+        self.e = shap.DeepExplainer(self.model, background)
+
+    def shap_calc(self, img):    
+        shap_values = self.e.shap_values(img, check_additivity=False)
         shap_sum = []
         s = np.array(shap_values)
         shap_values = s.reshape(10, 28, 28)
@@ -53,59 +56,74 @@ class ShapCreate(object):
         }
         return shap_info
 
-    def add_noise(self, images, eps=0.5):
-        noise_images = []
-        for img in images:
-            img = img.reshape(1, 28, 28, 1)
-            shap_info = self.shap_calc(img)
-            index = []
-            values = []
-            image = img.reshape(28, 28)
-            base_heat = shap_info['min_shap']
-            compare_heat = shap_info['max_shap']
-            for i in range(28):
-                for j in range(28):
-                    base_value = base_heat[i][j]
-                    comp_value = compare_heat[i][j]
-                    values.append(abs(base_value) + abs(comp_value))
-            values.sort()
-            for i in range(28):
-                for j in range(28):
-                    base_value = base_heat[i][j]
-                    comp_value = compare_heat[i][j]
-                    if base_value < 0 and comp_value > 0:
-                        # パラメータ考える必要あり
-                        if abs(base_value) + abs(comp_value) > values[int(-100)]:
-                            index.append((i, j))
-            max_value = base_heat.max()
-            min_value = base_heat.min()
-            for i in range(len(index)):
-                shap_value = base_heat[index[i][0]][index[i][1]]
-                if shap_value > 0:
-                    w = shap_value / max_value
-                elif shap_value < 0:
-                    w = shap_value / min_value
-                else:
-                    w = 0
-                w = w * (1 + eps)
-                weight = [1 - w, w]
-                dot = random.choices([0, 1], k=1, weights=weight)
-                if dot[0] == 0:  # 反転させない
-                    pass
-                elif dot[0] == 0 and image[index[i][0]][index[i][1]] == 0:  # 反転させる
-                    image[index[i][0]][index[i][1]] = 1
-                else:
-                    image[index[i][0]][index[i][1]] = 0
-            noise_images.append(image)
-        return noise_images
-
-    def shap_visu(self, file):
-        shap.image_plot(self.shap_info['shap_values'], self.img, show=False)
-        plt.savefig(PATH + 'study_data/{}_heat.png'.format(file))
-        plt.close()
-        plt.bar(range(0, 10), self.shap_info['shap_sum'])
-        plt.savefig(PATH + 'study_data/{}_bar.png'.format(file))
-        plt.close()
+    def add_noise(self, img, eps=0.5):
+        img = img.reshape(1, 28, 28, 1)
+        shap_info = self.shap_calc(img)
+        index = []
+        values = []
+        image = img.reshape(28, 28)
+        base_heat = shap_info['min_shap']
+        compare_heat = shap_info['max_shap']
+        for i in range(28):
+            for j in range(28):
+                base_value = base_heat[i][j]
+                comp_value = compare_heat[i][j]
+                values.append(abs(base_value) + abs(comp_value))
+        values.sort()
+        for i in range(28):
+            for j in range(28):
+                base_value = base_heat[i][j]
+                comp_value = compare_heat[i][j]
+                if base_value < 0 and comp_value > 0:
+                    # パラメータ考える必要あり
+                    if abs(base_value) + abs(comp_value) > values[int(-100)]:
+                        index.append((i, j))
+        max_value = base_heat.max()
+        min_value = base_heat.min()
+        for i in range(len(index)):
+            shap_value = base_heat[index[i][0]][index[i][1]]
+            if shap_value > 0:
+                w = shap_value / max_value
+            elif shap_value < 0:
+                w = shap_value / min_value
+            else:
+                w = 0
+            w = w * (1 + eps)
+            weight = [1 - w, w]
+            dot = random.choices([0, 1], k=1, weights=weight)
+            if dot[0] == 0:  # 反転させない
+                pass
+            elif dot[0] == 0 and image[index[i][0]][index[i][1]] == 0:  # 反転させる
+                image[index[i][0]][index[i][1]] = 1
+            else:
+                image[index[i][0]][index[i][1]] = 0
+        return image
+    
+    def save_noise_image(self, dataX, dataY):
+        count = 0
+        for i in range(len(dataX)):
+            if count == 1000 or count == 0:
+                print("background 更新")
+                count = 0
+                self.define_explainer()
+            else:
+                pass
+            print(i)
+            noise_image = self.add_noise(dataX[i], eps=0.7).reshape(1, 28, 28, 1)
+            # ノイズ付加後の画像のSHAP値を出す
+            shap_info = self.shap_calc(noise_image)
+            # 付加前と付加後のラベルの定義
+            before_label = int([np.where(dataY[i] == 1.0)][0][0][0])
+            after_label = shap_info['max_index']
+            noise_image = np.array(noise_image).reshape(28, 28)*255
+            # 付加前と付加後でラベルが異なるもの
+            if before_label != after_label:
+                cv2.imwrite(PATH + f'images/shap_train_data2/miss/{before_label}_{after_label}_{i}.jpg', noise_image)
+            # 付加前と付加後でラベルが同じもの
+            else:
+                cv2.imwrite(PATH + f'images/shap_train_data2/same/{before_label}_{after_label}_{i}.jpg', noise_image) 
+            count += 1
+            
 
     @staticmethod
     def create_heatmap(model_name, data_name):

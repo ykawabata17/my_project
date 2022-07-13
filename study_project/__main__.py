@@ -1,16 +1,14 @@
 from mylib.calc_shap import ShapCreate
-from mylib.utils import get_home_path
+from mylib.utils import get_home_path, model_data_load
 
 
 PATH = get_home_path()
 
 
 def main():
-    models = ['org']
-    datas = ['shap']
-    for model in models:
-        for data in datas:
-            ShapCreate.create_heatmap(model, data)
+    model, dataX, dataY = model_data_load('org', 'train_org')
+    shap_creater = ShapCreate(model)
+    shap_creater.save_noise_image(dataX, dataY)
 
 
 if __name__ == '__main__':
