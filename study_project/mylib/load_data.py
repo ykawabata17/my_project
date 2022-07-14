@@ -22,7 +22,7 @@ def load_img(folder_name, shuffle=True):
             dataY.append(i)
     dataX, dataY = LoadData._data_edit(
         dataX, dataY, shuffle)
-    dataY = to_categorical(dataY)
+    # dataY = to_categorical(dataY)
     return dataX, dataY
 
 
@@ -35,7 +35,7 @@ class LoadData(object):
         (trainX_org, trainY_org), _ = mnist.load_data()
         trainX_org, trainY_org = LoadData._data_edit(
             trainX_org, trainY_org, shuffle)
-        trainY_org = to_categorical(trainY_org)
+        # trainY_org = to_categorical(trainY_org)
         return trainX_org, trainY_org
 
     @staticmethod
@@ -43,11 +43,11 @@ class LoadData(object):
         _, (testX_org, testY_org) = mnist.load_data()
         testX_org, testY_org = LoadData._data_edit(
             testX_org, testY_org, shuffle)
-        testY_org = to_categorical(testY_org)
+        # testY_org = to_categorical(testY_org)
         return testX_org, testY_org
 
     def load_train_shap(self):
-        trainX_shap, trainY_shap = load_img('ae_train')
+        trainX_shap, trainY_shap = load_img('shap_train_same_bg')
         return trainX_shap, trainY_shap
 
     def load_train_shap_mis(self, shuffle=True):
@@ -55,7 +55,7 @@ class LoadData(object):
         return trainX_shap_mis, trainY_shap_mis
 
     def load_test_shap(self, shuffle=True):
-        testX_shap, testY_shap = load_img('shap_test', shuffle)
+        testX_shap, testY_shap = load_img('shap_test_redef_bg', shuffle)
         return testX_shap, testY_shap
 
     def load_train_ae(self):

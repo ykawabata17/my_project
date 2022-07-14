@@ -118,10 +118,10 @@ class ShapCreate(object):
             noise_image = np.array(noise_image).reshape(28, 28)*255
             # 付加前と付加後でラベルが異なるもの
             if before_label != after_label:
-                cv2.imwrite(PATH + f'images/shap_train_data2/miss/{before_label}_{after_label}_{i}.jpg', noise_image)
+                cv2.imwrite(PATH + f'images/shap_test_data2/miss/{before_label}_{after_label}_{i}.jpg', noise_image)
             # 付加前と付加後でラベルが同じもの
             else:
-                cv2.imwrite(PATH + f'images/shap_train_data2/same/{before_label}_{after_label}_{i}.jpg', noise_image) 
+                cv2.imwrite(PATH + f'images/shap_test_data2/same/{before_label}_{after_label}_{i}.jpg', noise_image) 
             count += 1
             
 

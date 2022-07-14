@@ -1,7 +1,8 @@
 import glob
 
 from .load_data import LoadData
-from keras.models import load_model
+from tensorflow.keras.models import load_model
+from tensorflow.keras.utils import to_categorical
 
 
 class EvaluateAcc(object):
@@ -15,10 +16,10 @@ class EvaluateAcc(object):
     def evaluate(self, models):
         acc_org, acc_shap, acc_ae, acc_rand = [], [], [], []
         for model in models:
-            _, org = model.evaluate(self.testX_org, self.testY_org)
-            _, shap = model.evaluate(self.testX_shap, self.testY_shap)
-            _, ae = model.evaluate(self.testX_ae, self.testY_ae)
-            _, rand = model.evaluate(self.testX_random, self.testY_random)
+            _, org = model.evaluate(self.testX_org, to_categorical(self.testY_org))
+            _, shap = model.evaluate(self.testX_shap, to_categorical(self.testY_shap))
+            _, ae = model.evaluate(self.testX_ae, to_categorical(self.testY_ae))
+            _, rand = model.evaluate(self.testX_random, to_categorical(self.testY_random))
             acc_org.append(org)
             acc_shap.append(shap)
             acc_ae.append(ae)
