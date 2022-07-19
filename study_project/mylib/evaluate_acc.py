@@ -4,6 +4,10 @@ from .load_data import LoadData
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import to_categorical
 
+from mylib.utils import get_home_path
+
+PATH = get_home_path()
+
 
 class EvaluateAcc(object):
     def __init__(self):
@@ -30,7 +34,7 @@ class EvaluateAcc(object):
     def model_evaluate(folder_name):
         models = []
         evaluate = EvaluateAcc()
-        files = glob.glob(f'C:/Users/kawabata/study_data/models/{folder_name}/*.h5')
+        files = glob.glob(PATH + f'models/{folder_name}/*.h5')
         for file in files:
             models.append(load_model(file))
         return evaluate.evaluate(models)

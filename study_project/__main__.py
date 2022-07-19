@@ -27,14 +27,13 @@ def main():
         acc['shap'].append(accs[1])
         acc['ae'].append(accs[2])
         acc['random'].append(accs[3])
-        
-    for _, v in acc.items():
+    for k, v in acc.items():
         v = np.array(v).T.tolist()
-        
+        acc[k] = v
     for k, v_list in acc.items():
+        count = 1
         for v in v_list:
-            count = 1
-            avg = sum(v) / 10
+            avg = sum(v) / 11
             print(f"{k}:{count}回目:{avg}")
             count += 1
         
