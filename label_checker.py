@@ -12,7 +12,7 @@ PATH = get_home_path()
 df = pd.DataFrame(0, index=[x for x in range(10)], columns=[x for x in range(10)])
 
 for i in range(10):
-    files = glob.glob(PATH + f'images/shap_train_redef_bg/{i}/*.jpg')
+    files = glob.glob(PATH + f'images/shap_train_same_bg/{i}/*.jpg')
     for file in files:
         file_name = os.path.basename(file)
         num = re.sub(r"\D", "", file_name)
@@ -20,4 +20,4 @@ for i in range(10):
         after = int(num[1])
         df[after][before] += 1
 
-df.to_csv(PATH + 'after_redef_bg_label.csv')
+df.to_csv(PATH + 'after_same_bg_label.csv')

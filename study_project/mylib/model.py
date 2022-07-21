@@ -23,7 +23,7 @@ class ModelCreate(object):
         self.trainX_org, self.trainY_org = LoadData.load_train_org()
         print('元画像読み込み完了')
         # shap画像の読み込み
-        self.trainX_shap, self.trainY_shap = data_loader.load_train_shap()
+        self.trainX_shap, self.trainY_shap = data_loader.load_train_shap_after()
         # self.trainX_shap_mis, self.trainY_shap_mis = data_loader.load_train_shap_mis()
         print('shap画像読み込み完了')
         # aeの読み込み

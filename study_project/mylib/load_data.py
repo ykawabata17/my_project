@@ -45,16 +45,24 @@ class LoadData(object):
             testX_org, testY_org, shuffle)
         # testY_org = to_categorical(testY_org)
         return testX_org, testY_org
+    
+    def load_train_shap_before(self, shuffle=True):
+        trainX_shap, trainY_shap = load_img('shap_train', shuffle)
+        return trainX_shap, trainY_shap
 
-    def load_train_shap(self):
-        trainX_shap, trainY_shap = load_img('shap_train_same_bg')
+    def load_train_shap_after(self, shuffle=True):
+        trainX_shap, trainY_shap = load_img('shap_train_same_bg', shuffle)
         return trainX_shap, trainY_shap
 
     def load_train_shap_mis(self, shuffle=True):
         trainX_shap_mis, trainY_shap_mis = load_img('shap_train_mis', shuffle)
         return trainX_shap_mis, trainY_shap_mis
 
-    def load_test_shap(self, shuffle=True):
+    def load_test_shap_before(self, shuffle=True):
+        testX_shap, testY_shap = load_img('shap_test', shuffle)
+        return testX_shap, testY_shap
+    
+    def load_test_shap_after(self, shuffle=True):
         testX_shap, testY_shap = load_img('shap_test_redef_bg', shuffle)
         return testX_shap, testY_shap
 
